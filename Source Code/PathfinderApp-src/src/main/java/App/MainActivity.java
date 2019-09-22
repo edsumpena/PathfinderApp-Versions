@@ -100,7 +100,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                               // e.printStackTrace();
                             }
                         }
                         try {
@@ -123,7 +123,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                //e.printStackTrace();
                             }
                         }
                         try {
@@ -194,7 +194,7 @@ public class MainActivity extends JPanel {
                                 oneTimeRun = false;
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
                         try {
                             Thread.sleep(50);
@@ -265,7 +265,7 @@ public class MainActivity extends JPanel {
         try {
             image = ImageIO.read(new File("res/images/ruckus_field_lines.png"));  //Import FTC Field Image
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             System.exit(1);
         }
         Image newImage = image.getScaledInstance(750, 750, java.awt.Image.SCALE_SMOOTH);  //Scale up the image in size
@@ -1004,8 +1004,9 @@ public class MainActivity extends JPanel {
                         armServoList.remove(armServoList.indexOf(selectedCircle[0]));
                         armServoList.remove(armServoList.indexOf(selectedCircle[1]));
                     } catch (Exception x) {
-                        x.printStackTrace();
+                        //x.printStackTrace();
                     }
+                    MotorSettingsHandler.panelManager(false,50,1000,1000);
                     selectedCircle[0] = -1000;
                     selectedCircle[1] = -1000;
                     selectedCircle[2] = -1000;
@@ -1292,7 +1293,7 @@ public class MainActivity extends JPanel {
                             lineSettingsAndParameters.add(params3);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
 
                     ArrayList<ArrayList<Integer>> points2draw = LineArrayProcessor.polyLineList(lineSettingsAndParameters, false);
@@ -1372,7 +1373,7 @@ public class MainActivity extends JPanel {
                                             g2d.draw(curvedLine);
                                         }
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                       // e.printStackTrace();
                                     }
                                 }
                                 numOfIndexesRun += 1;
@@ -1404,7 +1405,7 @@ public class MainActivity extends JPanel {
                                             points2draw.get(numOfIndexesRun).remove(1);
                                         }
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                       // e.printStackTrace();
                                     }
                                 }
                                 numOfIndexesRun += 1;
