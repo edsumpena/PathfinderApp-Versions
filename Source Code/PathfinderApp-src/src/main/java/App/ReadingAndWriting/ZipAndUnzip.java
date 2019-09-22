@@ -41,6 +41,15 @@ public class ZipAndUnzip {
             while ((len3 = in.read(buffer)) > 0) {
                 zos.write(buffer, 0, len3);
             }
+
+            ze= new ZipEntry(pathName + "Params.arm");
+            zos.putNextEntry(ze);
+            in = new FileInputStream(zipFilePath + "\\" + pathName + "Params.arm");
+
+            int len4;
+            while ((len4 = in.read(buffer)) > 0) {
+                zos.write(buffer, 0, len4);
+            }
             in.close();
             zos.closeEntry();
 
@@ -71,6 +80,11 @@ public class ZipAndUnzip {
         tempFolder3.setReadable(true);
         tempFolder3.setWritable(true);
         tempFolder3.delete();
+        File tempFolder4 = new File(zipFilePath + "\\" + name + "Params.arm");
+        tempFolder4.setExecutable(true);
+        tempFolder4.setReadable(true);
+        tempFolder4.setWritable(true);
+        tempFolder4.delete();
     }
     public static void deleteAndOrRename(String deletePath, String renamePath, String renameFilePathTo, boolean delete, boolean rename){
         try {

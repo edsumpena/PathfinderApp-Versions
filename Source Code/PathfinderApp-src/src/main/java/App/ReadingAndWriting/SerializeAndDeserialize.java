@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class SerializeAndDeserialize {
-    public static void serialize(ArrayList<Integer> circles, ArrayList<ArrayList<String>> lines, String filePath, String pathName, String traj,
-                                 String loc, String motors) {
+    public static void serialize(ArrayList<Integer> circles, ArrayList<ArrayList<String>> lines, ArrayList<Integer> arm,
+                                 String filePath, String pathName, String traj, String motors, String armParams) {
         File file = new File(filePath + "\\" + pathName + ".path");
         file.getParentFile().mkdir();
         file.setExecutable(true);
@@ -51,11 +51,22 @@ public class SerializeAndDeserialize {
             ioe.printStackTrace();
         }
         try {
+            FileOutputStream fos3 = new FileOutputStream(filePath + "\\" + pathName + "Params.arm");
+            ObjectOutputStream oos3 = new ObjectOutputStream(fos3);
+            oos3.writeObject(arm);
+            oos3.flush();
+            oos3.close();
+            fos3.flush();
+            fos3.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        try {
             File f = new File(filePath + "\\" + pathName + "Json.traj");
             FileWriter fw = new FileWriter(f, true);
             BufferedWriter bw = new BufferedWriter(fw);
             bw.newLine();
-            bw.write("TRAJ:" + traj + ",MOTORS;" + motors + ",LOCATION-" + loc);
+            bw.write("TRAJ:" + traj + ",MOTORS;" + motors + ",ARM_" + armParams);
             bw.flush();
             bw.close();
         } catch (IOException ioe) {
@@ -63,7 +74,7 @@ public class SerializeAndDeserialize {
         }
     }
 
-    public static ArrayList deserialize(String filePathAndName, Boolean stringArrayList) {
+    public static ArrayList deserialize(String filePathAndName, boolean stringArrayList) {
 
         FileInputStream fis;
         ObjectInputStream ois;

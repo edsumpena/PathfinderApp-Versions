@@ -64,8 +64,8 @@ public class FromAndToPose2D {
 //---------------------------------------------------------------------------------------------------------
 
     public static Pose2d canvasToFieldSpace(double vectorX, double vectorY, double headingX, double headingY) {
-        double fieldY = -(vectorX - CANVAS_SIZE / 2.0) * (255.0 / CANVAS_SIZE);  //255.0 or 144.0?
-        double fieldX = -(vectorY - CANVAS_SIZE / 2.0) * (255.0 / CANVAS_SIZE);
+        double fieldY = -(vectorX - CANVAS_SIZE / 2.0) * (144.0 / CANVAS_SIZE);  //255.0 or 144.0?
+        double fieldX = -(vectorY - CANVAS_SIZE / 2.0) * (144.0 / CANVAS_SIZE);
         double heading = 0;
         if(headingX != -1000 && headingY != -1000) {
             heading = getHeading(vectorX, vectorY, headingX, headingY);
@@ -73,8 +73,8 @@ public class FromAndToPose2D {
         return new Pose2d(fieldX, fieldY, heading);
     }
     public static double[] fieldToCanvasSpace(Pose2d pose) {
-        double canvasY = -(pose.getX() * (CANVAS_SIZE / 255.0)) + CANVAS_SIZE / 2.0;
-        double canvasX = -(pose.getY() * (CANVAS_SIZE / 255.0)) + CANVAS_SIZE / 2.0;
+        double canvasY = -(pose.getX() * (CANVAS_SIZE / 144.0)) + CANVAS_SIZE / 2.0;
+        double canvasX = -(pose.getY() * (CANVAS_SIZE / 144.0)) + CANVAS_SIZE / 2.0;
         double[] returnVals = {canvasX,canvasY,pose.getHeading()};
         return returnVals;
     }
