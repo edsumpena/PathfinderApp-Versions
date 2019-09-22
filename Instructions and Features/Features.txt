@@ -1,0 +1,17 @@
+Pathfinder App Features:
+
+1. Features involving points GUI:
+-Press N: Creates new point at mouse location
+-Click on a Point: Select/Deselect
+-Click and Drag Point: Move point to another location
+-Select point and Press Delete: Deletes point
+
+2. Features involving movement options:
+-Drive Options Dropdown: Set drive behavior
+-Motor Options Dropdown: Set Motor moving (WORK IN PROGRESS--DISABLED)
+
+3. Features involving 
+-Get Path Data: Encodes Trajectory (in format: "TRAJ: trajectory, MOTORS; motors, LOCATIONS- motorLocations") 
+**Note: Motors are DISABLED (Work in Progress). ONLY COPY THE TRAJECTORY (After "TRAJ:" and before ", MOTORS;"!)
+-Open Path: Opens saved path in .path format
+-Save Path: Saves path to .path file

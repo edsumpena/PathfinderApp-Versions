@@ -1,0 +1,11 @@
+How to Run the App:
+
+1. Open the file in Intellij IDEA
+2. On the toolbar, press "add configurations" (located to the right of build project and left of run project)
+3. Press "+" in top left corner
+4. In the dropdown menu, press "JAR Application"
+5. Under "Path to JAR", select the path to the app
+6. "Working directory" section should update upon selecting path to app.
+7. "JRE" should be "Default"
+8. Press OK
+9. Run the Project using the configuration that was just created
