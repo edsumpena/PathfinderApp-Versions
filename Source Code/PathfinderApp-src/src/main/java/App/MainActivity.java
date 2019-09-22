@@ -18,6 +18,7 @@ import App.Converters.ArrayListConverters;
 import App.Converters.FromAndToPose2D;
 import App.Converters.LineArrayProcessor;
 import App.Debugger.cmdLine;
+import App.ReadingAndWriting.MotorSettingsHandler;
 import App.ReadingAndWriting.MotorSetup;
 import App.ReadingAndWriting.SerializeAndDeserialize;
 import App.ReadingAndWriting.ZipAndUnzip;
@@ -68,8 +69,8 @@ public class MainActivity extends JPanel {
     static ArrayList<String> params1 = new ArrayList<>();
     static ArrayList<String> params2 = new ArrayList<>();
     static ArrayList<String> params3 = new ArrayList<>();
-    static ArrayList<Integer> motorExecutedLocation = new ArrayList<>();
     static ArrayList<String> motorNames = new ArrayList<>();
+    static ArrayList<Integer> motorData = new ArrayList<>();
     static String pathName = "untitled path";
     static String currentlySelected = "[Select]";
     static int z = 0;
@@ -77,11 +78,15 @@ public class MainActivity extends JPanel {
     static int z2 = 0;
     static int v2 = 0;
     static boolean selected = false;
-    static int clearX = 0;
-    static int clearY = 0;
     static File prevFilePath;
     static ObjectMapper objectMapper = new ObjectMapper();
     static int[] selectedCircle = {-1000, -1000, -1000};
+    public static boolean showing = false;
+    public static int del = -1;
+    public static int pow = -1;
+    public static int run = -1;
+    static ArrayList<Integer> armServoList = new ArrayList<>();
+    static boolean arm = false;
 
     public static class threads extends Thread {    //Threads to house infinite loops
         static boolean unstoppable = true;
@@ -95,7 +100,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                               // e.printStackTrace();
                             }
                         }
                         try {
@@ -118,7 +123,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                //e.printStackTrace();
                             }
                         }
                         try {
@@ -136,11 +141,13 @@ public class MainActivity extends JPanel {
                 public void run() {
                     boolean oneTimeRun = false;
                     while (unstoppable) {
+                        if (!String.valueOf(cbMotor.getItemAt(cbMotor.getSelectedIndex())).contains("[Select]") &&
+                                !String.valueOf(cbMotor.getItemAt(cbMotor.getSelectedIndex())).contains("DCWheel"))
+                            cbLine.setSelectedIndex(0);
                         try {
-                            if (selected && !oneTimeRun) {
+                            if (selected && !oneTimeRun && !arm) {
                                 prevSelectedLine = cbLine.getSelectedIndex();
                                 prevSelectedMotor = cbMotor.getSelectedIndex();
-                                System.out.println(selectedCircle[0] + " " + selectedCircle[1]);
                                 if (!(lineSettingsAndParameters.get(0).get(circles.indexOf(selectedCircle[0]) / 3 - 1).substring(0, 1).toUpperCase() +
                                         lineSettingsAndParameters.get(0).get(circles.indexOf(selectedCircle[0]) / 3 - 1).substring(1)).contains("Spline"))
                                     cbLine.setSelectedItem(lineSettingsAndParameters.get(0).get(circles.indexOf(selectedCircle[0]) / 3 - 1).substring(0, 1).toUpperCase() +
@@ -148,25 +155,90 @@ public class MainActivity extends JPanel {
                                 else
                                     cbLine.setSelectedItem(lineSettingsAndParameters.get(0).get(circles.indexOf(selectedCircle[0]) / 3 - 1).substring(0, 1).toUpperCase() +
                                             lineSettingsAndParameters.get(0).get(circles.indexOf(selectedCircle[0]) / 3 - 1).substring(1) + " To");
+                                int index = circles.indexOf(selectedCircle[0]) / 3 - 1;
+                                int y = 0;
+                                int z = 0;
+                                while (!armServoList.isEmpty() && armServoList.size() > y) {
+                                    if (armServoList.get(y + 5) < index) {
+                                        z += 1;
+                                    } else
+                                        break;
+                                    y += 6;
+                                }
+                                index += z;
+                                if (index < 0)
+                                    index = 0;
                                 int i = 0;
                                 while (cbMotor.getItemCount() > i) {
-                                    if (cbMotor.getItemAt(i).toString().contains(motorNames.get(circles.indexOf(selectedCircle[0]) / 3 - 1))) {
+                                    if (cbMotor.getItemAt(i).toString().contains(motorNames.get(index))) {
                                         cbMotor.setSelectedIndex(i);
-                                        System.out.println(i);
                                     }
                                     i += 1;
                                 }
                                 oneTimeRun = true;
+                            } else if (selected && !oneTimeRun && arm) {
+                                cbLine.setSelectedIndex(0);
+                                prevSelectedLine = 0;
+                                prevSelectedMotor = cbMotor.getSelectedIndex();
+                                int index = armServoList.get(armServoList.indexOf(selectedCircle[0]) + 5);
+                                int i = 0;
+                                while (cbMotor.getItemCount() > i) {
+                                    if (cbMotor.getItemAt(i).toString().contains(motorNames.get(index))) {
+                                        cbMotor.setSelectedIndex(i);
+                                    }
+                                    i += 1;
+                                }
                             } else if (!selected && oneTimeRun) {
                                 cbLine.setSelectedIndex(prevSelectedLine);
                                 cbMotor.setSelectedIndex(prevSelectedMotor);
                                 oneTimeRun = false;
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
                         try {
                             Thread.sleep(50);
+                        } catch (InterruptedException ignore) {
+                        }
+                    }
+                }
+            };
+            one.start();
+        }
+
+        public static void showMotorSettings(JButton button, JTextField delay, JTextField runner, JTextField power,
+                                             JLabel delayLabel, JLabel runLabel, JLabel powerLabel) {     //All JFrame related loops
+            Thread one = new Thread() {
+                public void run() {
+                    boolean stopper = false;
+                    while (unstoppable) {
+                        if (showing && stopper) {
+                            stopper = false;
+                            button.setVisible(true);
+                            delay.setVisible(true);
+                            runner.setVisible(true);
+                            power.setVisible(true);
+                            delayLabel.setVisible(true);
+                            runLabel.setVisible(true);
+                            powerLabel.setVisible(true);
+                            delay.setText(String.valueOf(del));
+                            runner.setText(String.valueOf(run));
+                            power.setText(String.valueOf(pow));
+                        } else if (!showing && !stopper) {
+                            stopper = true;
+                            button.setVisible(false);
+                            delay.setVisible(false);
+                            runner.setVisible(false);
+                            power.setVisible(false);
+                            delay.setVisible(false);
+                            runner.setVisible(false);
+                            power.setVisible(false);
+                            delayLabel.setVisible(false);
+                            runLabel.setVisible(false);
+                            powerLabel.setVisible(false);
+                        }
+                        try {
+                            Thread.sleep(10);
                         } catch (InterruptedException ignore) {
                         }
                     }
@@ -191,9 +263,9 @@ public class MainActivity extends JPanel {
         types.add("Servo");
         MotorSetup.exportMotors(name, types);
         try {
-            image = ImageIO.read(new File("res/images/ruckus_field_lines.png"));  //Import FTC Field Image
+            image = ImageIO.read(new File("res/images/SkystoneFieldv1.png"));  //Import FTC Field Image
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             System.exit(1);
         }
         Image newImage = image.getScaledInstance(750, 750, java.awt.Image.SCALE_SMOOTH);  //Scale up the image in size
@@ -226,7 +298,6 @@ public class MainActivity extends JPanel {
 
         JComboBox jComboBox2 = new JComboBox();  //Dropdown box creator for Motor Options
         jComboBox2.addItem("[Select]");  //Dropdown options for Motor Options
-        cmdLine.debugger.dispVar("motors", MotorSetup.importMotors().get(0), 0, "N/A");
         if (!MotorSetup.importMotors().get(0).get(0).contains("Error")) {     //Imports list of motors & motor types
             int i = 0;
             while (MotorSetup.importMotors().size() >= i) {
@@ -266,12 +337,12 @@ public class MainActivity extends JPanel {
                             0, 1, 3), lineSettingsAndParameters.get(0),
                             DriverConstraintsWrapper.getDriveConstraints(), pathName);
                     String motors = objectMapper.writeValueAsString(motorNames);
-                    String moveMotorLocation = objectMapper.writeValueAsString(motorExecutedLocation);
                     String trajectory = objectMapper.writeValueAsString(driveTraj);
+                    String armParams = objectMapper.writeValueAsString(armServoList);
                     String encodedTraj = Base64.getEncoder().encodeToString(trajectory.getBytes());
-                    String encodedLoc = Base64.getEncoder().encodeToString(moveMotorLocation.getBytes());
                     String encodedMotors = Base64.getEncoder().encodeToString(motors.getBytes());
-                    tf.setText("TRAJ:" + encodedTraj + ",MOTORS;" + encodedMotors + ",LOCATION-" + encodedLoc);
+                    String encodedArm = Base64.getEncoder().encodeToString(armParams.getBytes());
+                    tf.setText("TRAJ:" + encodedTraj + ",MOTORS;" + encodedMotors + ",ARM_" + encodedArm);
                 } catch (Exception e) {
                     System.err.println(e.toString());
                 }
@@ -305,23 +376,25 @@ public class MainActivity extends JPanel {
                     String cirDir = fileChooser.getCurrentDirectory() + "\\" + name + "Circles.cir";    //Sets .cir file containing serialized circle array as current directory
                     String lineDir = fileChooser.getCurrentDirectory() + "\\" + name + "Traj.line";     //Sets .line file containing serialized line array as current directory
                     String trajDir = fileChooser.getCurrentDirectory() + "\\" + name + "Json.traj";
+                    String armDir = fileChooser.getCurrentDirectory() + "\\" + name + "Params.arm";
                     draw.setDimension(15, 15);
                     draw.backgroundTransparent(true);
                     draw.visibility(true);
                     circles = SerializeAndDeserialize.deserialize(cirDir, false);    //Gets deserialized ArrayList and defines variable
                     lineSettingsAndParameters = SerializeAndDeserialize.deserialize(lineDir, true);  //Deserializes the arrays (see SerializeAndDeserialize class)
+                    armServoList = SerializeAndDeserialize.deserialize(armDir, false);
 
                     String trajectory = SerializeAndDeserialize.readJson(trajDir);
-                    String motorString = trajectory.substring(trajectory.indexOf(";") + 1, trajectory.lastIndexOf("-") - 9);
+                    String motorString = trajectory.substring(trajectory.indexOf(";") + 1, trajectory.lastIndexOf("_") - 5);
                     motorString = motorString.replace("[\"", "");
                     motorString = motorString.replace("\"]", "");
                     motorNames = new ArrayList<>(Arrays.asList(motorString.split("\",\"")));
 
-                    String motorIndexes = trajectory.substring(trajectory.lastIndexOf("-") + 1);
-                    motorIndexes = motorIndexes.replace("[", "");
-                    motorIndexes = motorIndexes.replace("]", "");
-                    motorExecutedLocation = ArrayListConverters.stringArrayToIntArray(
-                            new ArrayList<>(Arrays.asList(motorIndexes.split(","))));
+                    String armVals = trajectory.substring(trajectory.lastIndexOf("_") + 1);
+                    armVals = armVals.replace("[", "");
+                    armVals = armVals.replace("]", "");
+                    ArrayList<Integer> example = ArrayListConverters.stringArrayToIntArray(
+                            new ArrayList<>(Arrays.asList(armVals.split(","))));
 
                     settings = lineSettingsAndParameters.get(0);
                     params1 = lineSettingsAndParameters.get(1);
@@ -329,7 +402,9 @@ public class MainActivity extends JPanel {
                     params3 = lineSettingsAndParameters.get(3);
                     ZipAndUnzip.deleteAndOrRename(cirDir, "", "", true, false);
                     ZipAndUnzip.deleteAndOrRename(trajDir, "", "", true, false);
-                    ZipAndUnzip.deleteAndOrRename(lineDir, "", "", true, false);    //Deletes temporary files
+                    ZipAndUnzip.deleteAndOrRename(lineDir, "", "", true, false);
+                    ZipAndUnzip.deleteAndOrRename(armDir, "", "", true, false);  //Deletes temporary files
+
                     prevFilePath = fileChooser.getCurrentDirectory();
                 } else if (result == JFileChooser.CANCEL_OPTION) {      //If cancel button is pressed
                     prevFilePath = fileChooser.getCurrentDirectory();
@@ -381,19 +456,19 @@ public class MainActivity extends JPanel {
                             }
                             prevFilePath = fileChooser.getCurrentDirectory();
                             String motors = "";
-                            String loc = "";
                             String traj = "";
+                            String arm = "";
                             try {
                                 TrajBuilderWrapper driveTraj = new TrajBuilderWrapper(FromAndToPose2D.pointsToPose2d(circles,
                                         0, 1, 3), lineSettingsAndParameters.get(0),
                                         DriverConstraintsWrapper.getDriveConstraints(), pathName);
                                 motors = objectMapper.writeValueAsString(motorNames);
-                                loc = objectMapper.writeValueAsString(motorExecutedLocation);
+                                arm = objectMapper.writeValueAsString(armServoList);
                                 traj = objectMapper.writeValueAsString(driveTraj);
                             } catch (Exception e) {
                             }
-                            SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, String.valueOf(fileToSave),
-                                    fileNoExt, traj, loc, motors);
+                            SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, armServoList, String.valueOf(fileToSave),
+                                    fileNoExt, traj, motors, arm);
                             ZipAndUnzip.zipFolder(fileToSave.getAbsolutePath(), fileNoExt);
                         }
                     } else {    //If not a duplicate file name and contains .path ext in the name
@@ -405,21 +480,19 @@ public class MainActivity extends JPanel {
                         prevFilePath = fileChooser.getCurrentDirectory();
                         currentlySelected = fileNoExt;
                         String motors = "";
-                        String loc = "";
                         String traj = "";
+                        String arm = "";
                         try {
-                            System.out.println(lineSettingsAndParameters);
-                            System.out.println(circles);
                             TrajBuilderWrapper driveTraj = new TrajBuilderWrapper(FromAndToPose2D.pointsToPose2d(circles,
                                     0, 1, 3), lineSettingsAndParameters.get(0),
                                     DriverConstraintsWrapper.getDriveConstraints(), pathName);
                             motors = objectMapper.writeValueAsString(motorNames);
-                            loc = objectMapper.writeValueAsString(motorExecutedLocation);
+                            arm = objectMapper.writeValueAsString(armServoList);
                             traj = objectMapper.writeValueAsString(driveTraj);
                         } catch (Exception e) {
                         }
-                        SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, String.valueOf(fileToSave),
-                                fileNoExt, traj, loc, motors);
+                        SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, armServoList, String.valueOf(fileToSave),
+                                fileNoExt, traj, motors, arm);
 
                         ZipAndUnzip.zipFolder(fileToSave.getAbsolutePath(), fileNoExt);
                     }
@@ -431,10 +504,79 @@ public class MainActivity extends JPanel {
             }
         });
 
+        //---------
+
+        JButton updateValues = new JButton("Save Parameters");
+        updateValues.setBounds(1030, 650, 150, 30);
+        updateValues.setFocusable(false);
+
+        JTextField delayBeforeRunning = new JTextField();
+        delayBeforeRunning.setBounds(1175, 500, 100, 30);
+        delayBeforeRunning.setFont(delayBeforeRunning.getFont().deriveFont(13f));
+        delayBeforeRunning.setFocusable(true);
+
+        JTextField secondsRun = new JTextField();
+        secondsRun.setBounds(1175, 600, 100, 30);
+        secondsRun.setFont(secondsRun.getFont().deriveFont(13f));
+        secondsRun.setFocusable(true);
+
+        JTextField power = new JTextField();
+        power.setBounds(1175, 550, 100, 30);
+        power.setFont(power.getFont().deriveFont(13f));
+        power.setFocusable(true);
+
+        JLabel delayLabel = new JLabel();
+        delayLabel.setText("Milliseconds Delay Before Running:");
+        delayLabel.setBounds(900, 495, 300, 30);
+        delayLabel.setFont(delayLabel.getFont().deriveFont(15f));
+
+        JLabel powerLabel = new JLabel();
+        powerLabel.setText("Set Power to Motor:");
+        powerLabel.setBounds(1020, 545, 200, 30);
+        powerLabel.setFont(powerLabel.getFont().deriveFont(15f));
+
+        JLabel runLabel = new JLabel();
+        runLabel.setText("Milliseconds to Run:");
+        runLabel.setBounds(1015, 595, 200, 30);
+        runLabel.setFont(runLabel.getFont().deriveFont(15f));
+
+        //---------
+
+        updateValues.addActionListener(new ActionListener() {  //Button onClickListener
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    armServoList.set(armServoList.indexOf(selectedCircle[0]) + 2, Integer.valueOf(power.getText()));
+                    pow = Integer.valueOf(power.getText());
+                } catch (Exception e) {
+                    power.setText(String.valueOf(pow));
+                }
+                try {
+                    armServoList.set(armServoList.indexOf(selectedCircle[0]) + 4, Integer.valueOf(delayBeforeRunning.getText()));
+                    del = Integer.valueOf(delayBeforeRunning.getText());
+                } catch (Exception e) {
+                    delayBeforeRunning.setText(String.valueOf(del));
+                }
+                try {
+                    armServoList.set(armServoList.indexOf(selectedCircle[0]) + 3, Integer.valueOf(secondsRun.getText()));
+                    run = Integer.valueOf(secondsRun.getText());
+                } catch (Exception e) {
+                    secondsRun.setText(String.valueOf(run));
+                }
+            }
+        });
+
         draw.backgroundTransparent(true);  //Change settings of the Dot (circle)
         draw.addOrSetColor("Yellow", new String[]{"Add"});
         draw.visibility(true);
 
+        layeredPane.add(runLabel, 17, 0);
+        layeredPane.add(powerLabel, 16, 0);
+        layeredPane.add(delayLabel, 15, 0);
+        layeredPane.add(power, 14, 0);
+        layeredPane.add(secondsRun, 13, 0);
+        layeredPane.add(delayBeforeRunning, 12, 0);
+        layeredPane.add(updateValues, 11, 0);
         layeredPane.add(openPathButton, 10, 0);
         layeredPane.add(saveButton, 9, 0);
         layeredPane.add(l1, 8, 0);  //Add all components to layeredPane and set overlap sequence
@@ -450,6 +592,8 @@ public class MainActivity extends JPanel {
         threads.executeRepaintAndClear(layeredPane, jLabel);    //See "threads" class
 
         threads.selectedListener(jComboBox1, jComboBox2);
+        threads.showMotorSettings(updateValues, delayBeforeRunning, secondsRun, power, delayLabel, runLabel, powerLabel);
+        MotorSettingsHandler.panelManager(false, 50, 1000, 1000);
         circles.clear();    //Reset ArrayList of circles
 
         add(layeredPane);       //Put layeredPane in MainActivity()
@@ -469,9 +613,17 @@ public class MainActivity extends JPanel {
                     strafe = false;
                     reverse = false;
                     spline = false;
-                    if (selected) {
+                    if (selected && !arm) {
                         lineSettingsAndParameters.get(0).set(circles.indexOf(selectedCircle[0]) / 3 - 1, "line");
-                        circles.set(circles.indexOf(selectedCircle[0]) + 2 ,draw.getColorIndex("Red"));
+                        circles.set(circles.indexOf(selectedCircle[0]) + 2, draw.getColorIndex("Red"));
+                    }
+                    if (!currentlySelected.contains("DCWheel") && !currentlySelected.contains("[Select]")) {
+                        line = false;
+                        select = true;
+                        curve = false;
+                        strafe = false;
+                        reverse = false;
+                        spline = false;
                     }
                 } else if (String.valueOf(item).equals("Curve")) {      //Robot turns to a location
                     curve = true;
@@ -480,9 +632,17 @@ public class MainActivity extends JPanel {
                     strafe = false;
                     reverse = false;
                     spline = false;
-                    if (selected) {
+                    if (selected && !arm) {
                         lineSettingsAndParameters.get(0).set(circles.indexOf(selectedCircle[0]) / 3 - 1, "curve");
-                        circles.set(circles.indexOf(selectedCircle[0]) + 2 ,draw.getColorIndex("Magenta"));
+                        circles.set(circles.indexOf(selectedCircle[0]) + 2, draw.getColorIndex("Magenta"));
+                    }
+                    if (!currentlySelected.contains("DCWheel") && !currentlySelected.contains("[Select]")) {
+                        line = false;
+                        select = true;
+                        curve = false;
+                        strafe = false;
+                        reverse = false;
+                        spline = false;
                     }
                 } else if (String.valueOf(item).equals("[Select]")) {
                     select = true;
@@ -498,9 +658,17 @@ public class MainActivity extends JPanel {
                     strafe = false;
                     reverse = true;
                     spline = false;
-                    if (selected) {
+                    if (selected && !arm) {
                         lineSettingsAndParameters.get(0).set(circles.indexOf(selectedCircle[0]) / 3 - 1, "reverse");
-                        circles.set(circles.indexOf(selectedCircle[0]) + 2 ,draw.getColorIndex("Cyan"));
+                        circles.set(circles.indexOf(selectedCircle[0]) + 2, draw.getColorIndex("Cyan"));
+                    }
+                    if (!currentlySelected.contains("DCWheel") && !currentlySelected.contains("[Select]")) {
+                        line = false;
+                        select = true;
+                        curve = false;
+                        strafe = false;
+                        reverse = false;
+                        spline = false;
                     }
                 } else if (String.valueOf(item).equals("Strafe")) {       //Robot strafes to a location (mechinum wheels only)
                     line = false;
@@ -509,9 +677,17 @@ public class MainActivity extends JPanel {
                     strafe = true;
                     reverse = false;
                     spline = false;
-                    if (selected) {
+                    if (selected && !arm) {
                         lineSettingsAndParameters.get(0).set(circles.indexOf(selectedCircle[0]) / 3 - 1, "strafe");
-                        circles.set(circles.indexOf(selectedCircle[0]) + 2 ,draw.getColorIndex("Green"));
+                        circles.set(circles.indexOf(selectedCircle[0]) + 2, draw.getColorIndex("Green"));
+                    }
+                    if (!currentlySelected.contains("DCWheel") && !currentlySelected.contains("[Select]")) {
+                        line = false;
+                        select = true;
+                        curve = false;
+                        strafe = false;
+                        reverse = false;
+                        spline = false;
                     }
                 } else if (String.valueOf(item).equals("Spline To")) {
                     spline = true;
@@ -520,9 +696,17 @@ public class MainActivity extends JPanel {
                     curve = false;
                     strafe = false;
                     reverse = false;
-                    if (selected) {
+                    if (selected && !arm) {
                         lineSettingsAndParameters.get(0).set(circles.indexOf(selectedCircle[0]) / 3 - 1, "spline");
-                        circles.set(circles.indexOf(selectedCircle[0]) + 2 ,draw.getColorIndex("Pink"));
+                        circles.set(circles.indexOf(selectedCircle[0]) + 2, draw.getColorIndex("Pink"));
+                    }
+                    if (!currentlySelected.contains("DCWheel") && !currentlySelected.contains("[Select]")) {
+                        line = false;
+                        select = true;
+                        curve = false;
+                        strafe = false;
+                        reverse = false;
+                        spline = false;
                     }
                 }
             }
@@ -541,9 +725,13 @@ public class MainActivity extends JPanel {
                     int i = 0;
                     while (MotorSetup.importMotors().get(0).size() > i) {      //Gets which motor is selected
                         if (String.valueOf(item).contains(MotorSetup.importMotors().get(0).get(i))) {
-                            currentlySelected = MotorSetup.importMotors().get(0).get(i);
+                            currentlySelected = MotorSetup.importMotors().get(0).get(i) + " (" + MotorSetup.importMotors().get(1).get(i) +
+                                    ")";
                             if (selected) {
-                                motorNames.set(circles.indexOf(selectedCircle[0]) / 3 - 1, currentlySelected);
+                                try {
+                                    motorNames.set(circles.indexOf(selectedCircle[0]) / 3 - 1, currentlySelected);
+                                } catch (Exception e) {
+                                }
                             }
                         }
                         i += 1;
@@ -554,6 +742,8 @@ public class MainActivity extends JPanel {
     }
 
     public static class mouse implements MouseMotionListener, MouseListener {   //Detect mouse location on picture (to draw points)
+        int flag = -1;
+
         public static void initListener(JFrame lp) {
             lp.addMouseMotionListener(new mouse());
             lp.addMouseListener(new mouse());
@@ -568,12 +758,16 @@ public class MainActivity extends JPanel {
                             circles.get(v2 + 1) + 15 >= mouseY && circles.get(v2 + 1) - 15 <= mouseY) {
                         if (selected) {
                             selected = false;
+                            arm = false;
+                            MotorSettingsHandler.panelManager(false, 50, 1000, 1000);
                             selectedCircle[0] = -1000;
                             selectedCircle[1] = -1000;
                             selectedCircle[2] = -1000;
                             break;
                         } else if (!selected) {
                             selected = true;
+                            arm = false;
+                            MotorSettingsHandler.panelManager(false, 50, 1000, 1000);
                             selectedCircle[0] = circles.get(v2);
                             selectedCircle[1] = circles.get(v2 + 1);
                             selectedCircle[2] = circles.get(v2 + 2);
@@ -582,6 +776,35 @@ public class MainActivity extends JPanel {
                     }
                     z2 += 1;
                     v2 += 3;
+                }
+            }
+            z2 = 0;
+            v2 = 0;
+            if (!armServoList.isEmpty()) {
+                while (z2 < armServoList.size() / 6) {
+                    if (armServoList.get(v2) + 15 >= mouseX && armServoList.get(v2) - 15 <= mouseX &&
+                            armServoList.get(v2 + 1) + 15 >= mouseY && armServoList.get(v2 + 1) - 15 <= mouseY) {
+                        if (selected) {
+                            selected = false;
+                            arm = false;
+                            MotorSettingsHandler.panelManager(false, 50, 1000, 1000);
+                            selectedCircle[0] = -1000;
+                            selectedCircle[1] = -1000;
+                            selectedCircle[2] = -1000;
+                            break;
+                        } else if (!selected) {
+                            selected = true;
+                            arm = true;
+                            selectedCircle[0] = armServoList.get(v2);
+                            selectedCircle[1] = armServoList.get(v2 + 1);
+                            selectedCircle[2] = 7;
+                            MotorSettingsHandler.panelManager(true, armServoList.get(v2 + 2), armServoList.get(v2 + 3),
+                                    armServoList.get(v2 + 4));
+                            break;
+                        }
+                    }
+                    z2 += 1;
+                    v2 += 6;
                 }
             }
         }
@@ -596,17 +819,32 @@ public class MainActivity extends JPanel {
 
         public void mousePressed(MouseEvent evt) {  //Mouse is pressed down -> Check if clicking on circle
             mouseClickedFocus = true;
-            z = 0;
-            v = 0;
-            if (!circles.isEmpty()) {
+            if (!circles.isEmpty() && flag == -1) {
+                z = 0;
+                v = 0;
                 while (z < circles.size() / 3) {
                     if (circles.get(v) + 15 >= mouseX && circles.get(v) - 15 <= mouseX &&
                             circles.get(v + 1) + 15 >= mouseY && circles.get(v + 1) - 15 <= mouseY) {
                         mouseClicked = true;
+                        flag = 0;
                         break;
                     }
-                    z = z + 1;
-                    v = v + 3;
+                    z += 1;
+                    v += 3;
+                }
+            }
+            if (!armServoList.isEmpty() && flag == -1) {
+                z = 0;
+                v = 0;
+                while (z < armServoList.size() / 6) {
+                    if (armServoList.get(v) + 15 >= mouseX && armServoList.get(v) - 15 <= mouseX &&
+                            armServoList.get(v + 1) + 15 >= mouseY && armServoList.get(v + 1) - 15 <= mouseY) {
+                        mouseClicked = true;
+                        flag = 1;
+                        break;
+                    }
+                    z += 1;
+                    v += 6;
                 }
             }
         }
@@ -615,30 +853,38 @@ public class MainActivity extends JPanel {
             mouseClickedFocus = false;
             if (mouseClicked && mouseX + xOffset <= 735 && mouseY + yOffset <= 735 &&
                     mouseX + xOffset >= 0 && mouseY + yOffset >= 0) {
-                clearX = circles.get(v) + xOffset;
-                clearY = circles.get(v + 1) + yOffset;
-                mouseClicked = false;
-                circles.set(v, mouseX);
-                circles.set(v + 1, mouseY);
-                selectedCircle[0] = circles.get(v);
-                selectedCircle[1] = circles.get(v + 1);
-                draw.addOrSetColor(draw.getColor(circles.get(v + 2)), new String[]{"Set", String.valueOf(v + 2)});
-                selectedCircle[2] = circles.get(v + 2);
-                try {
-                    params1.set(v / 3 * 2, String.valueOf(circles.get(v)));
-                    params1.set(v / 3 * 2 + 1, String.valueOf(circles.get(v + 1)));
-                } catch (Exception e) {
+                if (flag == 0) {
+                    mouseClicked = false;
+                    circles.set(v, mouseX);
+                    circles.set(v + 1, mouseY);
+                    selectedCircle[0] = circles.get(v);
+                    selectedCircle[1] = circles.get(v + 1);
+                    draw.addOrSetColor(draw.getColor(circles.get(v + 2)), new String[]{"Set", String.valueOf(v + 2)});
+                    selectedCircle[2] = circles.get(v + 2);
+                    try {
+                        params1.set(v / 3 * 2, String.valueOf(circles.get(v)));
+                        params1.set(v / 3 * 2 + 1, String.valueOf(circles.get(v + 1)));
+                    } catch (Exception e) {
+                    }
+                    try {
+                        params3.set(v / 3 * 2 - 2, String.valueOf(circles.get(v)));
+                        params3.set(v / 3 * 2 - 1, String.valueOf(circles.get(v + 1)));
+                    } catch (Exception e) {
+                    }
+                    lineSettingsAndParameters.clear();
+                    lineSettingsAndParameters.add(settings);
+                    lineSettingsAndParameters.add(params1);
+                    lineSettingsAndParameters.add(params2);
+                    lineSettingsAndParameters.add(params3);
+                    flag = -1;
+                } else if (flag == 1) {
+                    armServoList.set(v, mouseX);
+                    armServoList.set(v + 1, mouseY);
+                    selectedCircle[0] = armServoList.get(v);
+                    selectedCircle[1] = armServoList.get(v + 1);
+                    selectedCircle[2] = 7;
+                    flag = -1;
                 }
-                try {
-                    params3.set(v / 3 * 2 - 2, String.valueOf(circles.get(v)));
-                    params3.set(v / 3 * 2 - 1, String.valueOf(circles.get(v + 1)));
-                } catch (Exception e) {
-                }
-                lineSettingsAndParameters.clear();
-                lineSettingsAndParameters.add(settings);
-                lineSettingsAndParameters.add(params1);
-                lineSettingsAndParameters.add(params2);
-                lineSettingsAndParameters.add(params3);
             }
             v = 0;
             z = 0;
@@ -676,27 +922,39 @@ public class MainActivity extends JPanel {
                 nPressed = true;
                 gPressed = false;
                 if (!mouseExited && mouseX + xOffset <= 735 && mouseY + yOffset <= 735 &&
-                        mouseX + xOffset >= 0 && mouseY + yOffset >= 0 && !select &&
-                        !currentlySelected.contains("Select")) {  //Checks if mouse is in the screen & in field image
+                        mouseX + xOffset >= 0 && mouseY + yOffset >= 0 && (!select || (!currentlySelected.contains("[Select]") &&
+                        !currentlySelected.contains("DCWheel"))) && !currentlySelected.contains("Select")) {  //Checks if mouse is in the screen & in field image
                     motorNames.add(currentlySelected);
                     if (!currentlySelected.contains("DCWheel")) {
-                        motorExecutedLocation.add(circles.size() / 3);
+                        armServoList.add(mouseX);
+                        armServoList.add(mouseY);
+                        armServoList.add(50);
+                        armServoList.add(1000);
+                        armServoList.add(1000);
+                        if (!circles.isEmpty())
+                            armServoList.add(circles.size() / 3);
+                        else
+                            armServoList.add(0);
+                        draw.setDimension(15, 15);
+                        draw.backgroundTransparent(true);
+                        draw.visibility(true);
+                    } else {
+                        circles.add(mouseX);
+                        circles.add(mouseY);
+                        draw.setDimension(15, 15);
+                        draw.backgroundTransparent(true);
+                        draw.visibility(true);
+                        if (line)
+                            draw.addOrSetColor("Red", new String[]{"Add"});
+                        else if (curve)
+                            draw.addOrSetColor("Magenta", new String[]{"Add"});
+                        else if (reverse)
+                            draw.addOrSetColor("Cyan", new String[]{"Add"});
+                        else if (strafe)
+                            draw.addOrSetColor("Green", new String[]{"Add"});
+                        else if (spline)
+                            draw.addOrSetColor("Pink", new String[]{"Add"});
                     }
-                    circles.add(mouseX);
-                    circles.add(mouseY);
-                    draw.setDimension(15, 15);
-                    draw.backgroundTransparent(true);
-                    draw.visibility(true);
-                    if (line)
-                        draw.addOrSetColor("Red", new String[]{"Add"});
-                    else if (curve)
-                        draw.addOrSetColor("Magenta", new String[]{"Add"});
-                    else if (reverse)
-                        draw.addOrSetColor("Cyan", new String[]{"Add"});
-                    else if (strafe)
-                        draw.addOrSetColor("Green", new String[]{"Add"});
-                    else if (spline)
-                        draw.addOrSetColor("Pink", new String[]{"Add"});
                 }
             }
         }
@@ -713,7 +971,7 @@ public class MainActivity extends JPanel {
                 alreadyAdded = false;
                 nPressed = false;
             } else if (e.getKeyCode() == KeyEvent.VK_DELETE && selected) {
-                if (circles.indexOf(selectedCircle[0]) > 2) {
+                if (circles.indexOf(selectedCircle[0]) > 2 && !arm) {
                     circles.remove(circles.indexOf(selectedCircle[1]) + 1);
                     circles.remove(circles.indexOf(selectedCircle[0]));
                     circles.remove(circles.indexOf(selectedCircle[1]));
@@ -730,8 +988,25 @@ public class MainActivity extends JPanel {
                     params3.remove(params3.indexOf(String.valueOf(selectedCircle[1])));
                     params2.remove(params2.size() - 1);
                     params2.remove(params2.size() - 1);
-
+                    arm = false;
                     selected = false;
+                    selectedCircle[0] = -1000;
+                    selectedCircle[1] = -1000;
+                    selectedCircle[2] = -1000;
+                } else if (armServoList.contains(selectedCircle[0]) && arm) {
+                    arm = false;
+                    selected = false;
+                    try {
+                        armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
+                        armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
+                        armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
+                        armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
+                        armServoList.remove(armServoList.indexOf(selectedCircle[0]));
+                        armServoList.remove(armServoList.indexOf(selectedCircle[1]));
+                    } catch (Exception x) {
+                        //x.printStackTrace();
+                    }
+                    MotorSettingsHandler.panelManager(false,50,1000,1000);
                     selectedCircle[0] = -1000;
                     selectedCircle[1] = -1000;
                     selectedCircle[2] = -1000;
@@ -1018,7 +1293,7 @@ public class MainActivity extends JPanel {
                             lineSettingsAndParameters.add(params3);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
 
                     ArrayList<ArrayList<Integer>> points2draw = LineArrayProcessor.polyLineList(lineSettingsAndParameters, false);
@@ -1098,7 +1373,7 @@ public class MainActivity extends JPanel {
                                             g2d.draw(curvedLine);
                                         }
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                       // e.printStackTrace();
                                     }
                                 }
                                 numOfIndexesRun += 1;
@@ -1130,7 +1405,7 @@ public class MainActivity extends JPanel {
                                             points2draw.get(numOfIndexesRun).remove(1);
                                         }
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                       // e.printStackTrace();
                                     }
                                 }
                                 numOfIndexesRun += 1;
@@ -1140,6 +1415,15 @@ public class MainActivity extends JPanel {
                     if (selected) {
                         g.setColor(Color.BLUE);
                         g.fillOval(selectedCircle[0] + xOffset - 2, selectedCircle[1] + yOffset - 2, 18, 18);
+                    }
+                    numOfIndexesRun = 0;
+                    componentChecker = 0;
+                    while (numOfIndexesRun < armServoList.size() / 6) {
+                        g.setColor(Color.ORANGE);
+                        g.fillOval(armServoList.get(componentChecker) + xOffset, armServoList.get(componentChecker + 1) + yOffset,
+                                wid, hei);
+                        numOfIndexesRun += 1;
+                        componentChecker += 6;
                     }
                     numOfIndexesRun = 0;
                     componentChecker = 0;

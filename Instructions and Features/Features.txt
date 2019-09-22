@@ -8,10 +8,21 @@ Pathfinder App Features:
 
 2. Features involving movement options:
 -Drive Options Dropdown: Set drive behavior
--Motor Options Dropdown: Set Motor moving (WORK IN PROGRESS--DISABLED)
+-Motor Options Dropdown: Set Motor moving (v1.1.0 NEW)
+-Select an Arm Motor/Servo point & change parameters! (v1.1.0 NEW)
 
 3. Features involving 
--Get Path Data: Encodes Trajectory (in format: "TRAJ: trajectory, MOTORS; motors, LOCATIONS- motorLocations") 
-**Note: Motors are DISABLED (Work in Progress). ONLY COPY THE TRAJECTORY (After "TRAJ:" and before ", MOTORS;"!)
+-Get Path Data: Encodes Trajectory (in format: "TRAJ: trajectory, MOTORS; motors, ARM_ motorLocations (v1.1.0 NEW)") 
 -Open Path: Opens saved path in .path format
 -Save Path: Saves path to .path file
+
+
+v1.1.0 New Features:
+
+-Added customizable motors
+-Arm Motors now add orange dot
+-Change Arm Motor/Servo Params
+-Move and Delete Arm Motor/Servo Points
+
+v1.1.1 New Features:
+-Added new SKYSTONE field
