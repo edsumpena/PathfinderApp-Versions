@@ -6,6 +6,6 @@ How to Run the App:
 4. In the dropdown menu, press "JAR Application"
 5. Under "Path to JAR", select the path to the app
 6. "Working directory" section should update upon selecting path to app.
-7. "JRE" should be "Default"
+7. "JRE" should be set to any JAVA version that is 1.8 or newer.
 8. Press OK
 9. Run the Project using the configuration that was just created

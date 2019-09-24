@@ -1,0 +1,9 @@
+¨Ì sr java.util.ArrayListxÅ“ô«aù I sizexp   Hw   Hsr java.lang.Integer‚†§˜Åá8 I valuexr java.lang.NumberÜ¨ïî‡ã  xp  Æsq ~   sq ~    sq ~   "sq ~    ˆq ~ sq ~     sq ~   \q ~ sq ~    —sq ~   ˘q ~ sq ~   ∂sq ~   'q ~ sq ~   sq ~   sq ~    	sq ~   ¿sq ~    æq ~ sq ~    ¸sq ~    °q ~ sq ~    úsq ~   q ~ sq ~    ñsq ~   πsq ~    sq ~    –sq ~   Fq ~ sq ~   ùsq ~   Zq ~ sq ~   ]sq ~   q ~ sq ~   gsq ~   sq ~ sq ~   _sq ~    ‚sq ~    
+sq ~   ºsq ~    xq ~ %sq ~   Ysq ~    wq ~ %sq ~    ñsq ~    õq ~ %sq ~    Ysq ~   q ~ %sq ~    Xsq ~   Ôsq ~    sq ~    ¶sq ~   [q ~ 0sq ~   ôsq ~   îq ~ 0sq ~   isq ~   aq ~ 0sq ~   Øsq ~   ∞q ~ 0x
+
+
+DO NOT USE OR OPEN IN PathfinderApp-This is intended for example purposes ONLY:
+
+-Serialized data containing an ArrayList<Integer> which holds points of drawn DRIVE CIRCLES containing X, Y, and Color (NO ARM DATA).
+-ONLY read by PathfinderApp to load Trajectory GUI
+-PathfinderApp Deserializes ArrayList<Integer> to read & Serializes ArrayList<Integer> to store data
