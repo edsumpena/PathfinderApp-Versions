@@ -1,0 +1,8 @@
+¨Ì sr java.util.ArrayListxÅ“ô«aù I sizexp   w   t WheelDcMotors (DCWheel)q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ q ~ t ArmDcMotor (DCArm)q ~ t SmallServoArm (Servo)q ~ x
+
+
+DO NOT USE OR OPEN IN PathfinderApp-This is intended for example purposes ONLY:
+
+-Serialized data containing an ArrayList<String> which holds data on which motor is selected for each point.
+-ONLY read by PathfinderApp to load Trajectory GUI
+-PathfinderApp Deserializes ArrayList<String> to read & Serializes ArrayList<String> to store data

@@ -1,8 +1,0 @@
-¨Ì sr java.util.ArrayListxÅ“ô«aù I sizexp   w   sq ~     w   t lineq ~ q ~ q ~ t curveq ~ q ~ q ~ t strafeq ~ q ~ q ~ q ~ t reverseq ~ q ~ q ~ q ~ t splineq ~ q ~ q ~ q ~ xsq ~     .w   .t 430t 267t 290t 246t 202t 348t 209t 505t 438t 551t 540t 286t 448t 190t 252t 161t 156t 273t 150t 441t 208t 582t 413t 602t 605t 526t 615t 371t 607t 226t 444t 120t 345t 119t 150t 155t 89t 259t 88t 495t 166t 603t 409t 660t 617t 609xsq ~     .w   .t N/Aq ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8q ~ 8xsq ~     .w   .t 290t 246t 202t 348t 209t 505t 438t 551t 540t 286t 448t 190t 252t 161t 156t 273t 150t 441t 208t 582t 413t 602t 605t 526t 615t 371t 607t 226t 444t 120t 345t 119t 150t 155t 89t 259t 88t 495t 166t 603t 409t 660t 617t 609t 687t 432xx
-
-DO NOT USE OR OPEN IN PathfinderApp-This is intended for example purposes ONLY:
-
--Serialized data containing an ArrayList<ArrayList<String>> which holds drive data containing ArrayList<String> of 
-Drive Option, ArrayList<String> of X1 and Y1, and ArrayList of X2 and Y2 (NO ARM DATA). Used to draw LINES.
--ONLY read by PathfinderApp to load Trajectory GUI
--PathfinderApp Deserializes ArrayList<ArrayList<String>> to read & Serializes ArrayList<ArrayList<String>> to store data

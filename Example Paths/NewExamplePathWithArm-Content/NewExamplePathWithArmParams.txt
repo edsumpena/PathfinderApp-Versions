@@ -1,0 +1,9 @@
+¨Ì sr java.util.ArrayListxÅ“ô«aù I sizexp   w   sr java.lang.Integer‚†§˜Åá8 I valuexr java.lang.NumberÜ¨ïî‡ã  xp   Usq ~   esq ~    sq ~   wsq ~   ôsq ~    sq ~   Bsq ~   Ësq ~    )sq ~   sq ~   ;q ~ 	sq ~   +sq ~   Ósq ~    Ysq ~   qsq ~   3q ~ 	sq ~   µsq ~   dsq ~    4sq ~   sq ~   Ωq ~ 	x
+
+
+DO NOT USE OR OPEN IN PathfinderApp-This is intended for example purposes ONLY:
+
+-Serialized data containing an ArrayList<Integer> which holds arm/servo CIRCLES & parameters containing X, Y, 
+Power, Delay Before running (secs), How long to run (secs), point drawn after which "drive" circle (NO DRIVE DATA).
+-ONLY read by PathfinderApp to load Trajectory GUI
+-PathfinderApp Deserializes ArrayList<Integer> to read & Serializes ArrayList<Integer> to store data
