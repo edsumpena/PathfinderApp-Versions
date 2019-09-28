@@ -10,16 +10,6 @@ public class DriverConstraintsWrapper {
     static double maxAngleVeld;
     static double maxAngleAccd;
     static ArrayList<Double> contraintsd = new ArrayList<>();
-    static double maxVela;
-    static double maxAcca;
-    static double maxAngleVela;
-    static double maxAngleAcca;
-    static ArrayList<Double> contraintsa = new ArrayList<>();
-    static double maxVels;
-    static double maxAccs;
-    static double maxAngleVels;
-    static double maxAngleAccs;
-    static ArrayList<Double> contraintss = new ArrayList<>();
 
     public static void setDriveContraints(double maxVelocity, double maxAcceleration, double maxAngleVelocity, double maxAngleAcceleration) {
         maxVeld = maxVelocity;

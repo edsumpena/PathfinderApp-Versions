@@ -1,0 +1,5 @@
+MaxVel:1.0,MaxAcc;2.0,MaxAngVel=3.0,MaxAngAcc-4.0|  *Only change numbers. DO NOT CHANGE ":", ";", "=", "-", "|", or ANY spaces!
+
+DO NOT USE OR OPEN IN ParamsGenerator-This is intended for example purposes ONLY:
+
+-Stores drive constraints. These are Maximum Velocity, Maximum Acceleration, Maximum Angular Velocity, and Maximum Angular Acceleration.

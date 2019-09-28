@@ -1,30 +1,14 @@
 package App;
 
 /*
- * List of current features:
- * N to create new dot
- * Click & Drag dot with mouse to move
- * Save Path File Output: .path compressed file containing .cir & .line text editor files
- * .cir & .line text files contain serialized "circles" & "lineSettingsAndParameters" arrays:
- * Example output for 2 circle + 1 line:
- *  -ArrayList "circles": {circle1XVal, circle1YVal, circle1Color, circle2XVal, circle2YVal, circle2Color}
- *  -ArrayList "lineSettingsAndParameters.get(0)": {line1Type}
- *  -ArrayList "lineSettingsAndParameters.get(1)": {lineX1, lineY1}
- *  -ArrayList "lineSettingsAndParameters.get(2)": {lineX2, lineY2}
- *  -ArrayList "lineSettingsAndParameters.get(3)": {lineX3, lineY3}
+ * Main Pathfinder App Module that creates GUI
  */
 
-import App.Converters.ArrayListConverters;
 import App.Converters.FromAndToPose2D;
 import App.Converters.LineArrayProcessor;
-import App.Debugger.cmdLine;
-import App.ReadingAndWriting.MotorSettingsHandler;
-import App.ReadingAndWriting.MotorSetup;
-import App.ReadingAndWriting.SerializeAndDeserialize;
-import App.ReadingAndWriting.ZipAndUnzip;
+import App.ReadingAndWriting.*;
 import App.Wrappers.DriverConstraintsWrapper;
 import App.Wrappers.TrajBuilderWrapper;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
@@ -37,9 +21,7 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 
 import static App.Converters.LineArrayProcessor.getCurrentSetting;
 
@@ -69,8 +51,7 @@ public class MainActivity extends JPanel {
     static ArrayList<String> params2 = new ArrayList<>();
     static ArrayList<String> params3 = new ArrayList<>();
     static ArrayList<String> motorNames = new ArrayList<>();
-    static ArrayList<Integer> motorData = new ArrayList<>();
-    static String pathName = "untitled path";
+    static String pathName = "untitled";
     static String currentlySelected = "[Select]";
     static int z = 0;
     static int v = 0;
@@ -86,6 +67,7 @@ public class MainActivity extends JPanel {
     public static int run = -1;
     static ArrayList<Integer> armServoList = new ArrayList<>();
     static boolean arm = false;
+    static boolean updateMots = false;
 
     public static class threads extends Thread {    //Threads to house infinite loops
         static boolean unstoppable = true;
@@ -99,7 +81,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                               // e.printStackTrace();
+                                //e.printStackTrace();
                             }
                         }
                         try {
@@ -122,7 +104,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                                //e.printStackTrace();
+                               // e.printStackTrace();
                             }
                         }
                         try {
@@ -245,6 +227,31 @@ public class MainActivity extends JPanel {
             };
             one.start();
         }
+        public static void updateMotors(JComboBox motors) {     //All JFrame related loops
+            Thread one = new Thread() {
+                public void run() {
+                    while (true) {
+                        if(updateMots){
+                            updateMots = false;
+                            if (!MotorSetup.importMotors().get(0).get(0).contains("Error")) {     //Imports list of motors & motor types
+                                int i = 0;
+                                motors.removeAllItems();
+                                motors.addItem("[Select]");
+                                while (MotorSetup.importMotors().size() >= i) {
+                                    motors.addItem(MotorSetup.importMotors().get(0).get(i) + " (" + MotorSetup.importMotors().get(1).get(i) + ")");
+                                    i += 1;
+                                }
+                            }
+                        }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ignore) {
+                        }
+                    }
+                }
+            };
+            one.start();
+        }
     }
 
     public MainActivity() {
@@ -252,17 +259,8 @@ public class MainActivity extends JPanel {
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setPreferredSize(new Dimension(1300, 750));
         BufferedImage image = null;
-        ArrayList<String> name = new ArrayList<>();
-        ArrayList<String> types = new ArrayList<>();
-        name.add("WheelDcMotors");
-        name.add("ArmDcMotor");
-        name.add("SmallServoArm");
-        types.add("DCWheel");
-        types.add("DCArm");
-        types.add("Servo");
-        MotorSetup.exportMotors(name, types);
         try {
-            image = ImageIO.read(new File("res/images/SkystoneField.png"));  //Import FTC Field Image
+            image = ImageIO.read(new File("res/images/SkyStoneFieldv1.png"));  //Import FTC Field Image
         } catch (Exception e) {
             //e.printStackTrace();
             System.exit(1);
@@ -314,12 +312,16 @@ public class MainActivity extends JPanel {
         button.setFocusable(false);
 
         JButton saveButton = new JButton("Save Path");  //Creates a .path folder to save path data (only compatible with GUI)
-        saveButton.setBounds(1100, 400, 100, 35);
+        saveButton.setBounds(1175, 400, 100, 35);
         saveButton.setFocusable(false);
 
         JButton openPathButton = new JButton("Open Path");  //Opens and reads .path folder data
-        openPathButton.setBounds(850, 400, 100, 35);
+        openPathButton.setBounds(775, 400, 100, 35);
         openPathButton.setFocusable(false);
+
+        JButton openConst = new JButton("Open Motors & Drive Constants");
+        openConst.setBounds(900,400,250,35);
+        openConst.setFocusable(false);
 
         JTextField tf = new JTextField();  //Output Text Field
         tf.setBounds(775, 325, 500, 30);
@@ -333,17 +335,63 @@ public class MainActivity extends JPanel {
             public void actionPerformed(ActionEvent arg0) {     //Encodes TrajectoryBuilder, Motor Names, and Motor locations in Base64
                 try {
                     TrajBuilderWrapper driveTraj = new TrajBuilderWrapper(FromAndToPose2D.pointsToPose2d(circles,
-                            0, 1, 3), lineSettingsAndParameters.get(0),
+                            0, 1, 3), lineSettingsAndParameters.get(0), motorNames, armServoList,
                             DriverConstraintsWrapper.getDriveConstraints(), pathName);
-                    String motors = objectMapper.writeValueAsString(motorNames);
                     String trajectory = objectMapper.writeValueAsString(driveTraj);
-                    String armParams = objectMapper.writeValueAsString(armServoList);
                     String encodedTraj = Base64.getEncoder().encodeToString(trajectory.getBytes());
-                    String encodedMotors = Base64.getEncoder().encodeToString(motors.getBytes());
-                    String encodedArm = Base64.getEncoder().encodeToString(armParams.getBytes());
-                    tf.setText("TRAJ:" + encodedTraj + ",MOTORS;" + encodedMotors + ",ARM_" + encodedArm);
+                    tf.setText(encodedTraj);
                 } catch (Exception e) {
                     System.err.println(e.toString());
+                }
+            }
+        });
+        openConst.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Open Motor & Drive Constants");
+                fileChooser.setPreferredSize(new Dimension(800, 600));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.removeChoosableFileFilter(fileChooser.getFileFilter());  //Remove the default "All Files" filter
+                FileFilter filter = new FileNameExtensionFilter("PARAMS file", "prms");
+                fileChooser.addChoosableFileFilter(filter); //Add .path file type filter
+
+                if (prevFilePath != null) {
+                    fileChooser.setCurrentDirectory(prevFilePath);
+                }
+                int result = fileChooser.showOpenDialog(layeredPane);
+                if (result == JFileChooser.APPROVE_OPTION) {    //Save button is pressed
+                    File fileToRead = fileChooser.getSelectedFile();
+                    ZipAndUnzip.unzipFolder(String.valueOf(fileToRead), String.valueOf(fileChooser.getCurrentDirectory()));
+                    String name = String.valueOf(fileToRead).substring(String.valueOf(fileToRead).lastIndexOf("\\") + 1,
+                            String.valueOf(fileToRead).indexOf("."));
+                    pathName = name;
+
+                    String motorDir = fileChooser.getCurrentDirectory() + "\\" + name + "Motors.mtr";    //Sets .cir file containing serialized circle array as current directory
+                    String constantsDir = fileChooser.getCurrentDirectory() + "\\" + name + "DriveConstants.csts";     //Sets .ln file containing serialized line array as current directory
+
+                    ArrayList<ArrayList<String>> motorVals = ImportMotorsAndConstants.getMotors(motorDir);
+
+                    double[] csts = ImportMotorsAndConstants.getDriveConstants(constantsDir);
+
+                    try {
+                        DriverConstraintsWrapper.setDriveContraints(csts[0], csts[1], csts[2], csts[3]);
+                    } catch (Exception f){
+                        System.out.println("MOTOR IMPORT ERROR:  Error Setting Drive Constraints!");
+                    }
+
+                    MotorSetup.exportMotors(motorVals.get(0), motorVals.get(1));
+
+                    ZipAndUnzip.deleteAndOrRename(constantsDir, "", "", true, false);  //Deletes temporary files
+                    ZipAndUnzip.deleteAndOrRename(motorDir,"","",true,false);
+
+                    updateMots = true;
+
+                    prevFilePath = fileChooser.getCurrentDirectory();
+                } else if (result == JFileChooser.CANCEL_OPTION) {      //If cancel button is pressed
+                    prevFilePath = fileChooser.getCurrentDirectory();
+                } else if (result == JFileChooser.ERROR_OPTION) {       //If X button is pressed
+                    prevFilePath = fileChooser.getCurrentDirectory();
                 }
             }
         });
@@ -372,37 +420,38 @@ public class MainActivity extends JPanel {
                     String name = String.valueOf(fileToRead).substring(String.valueOf(fileToRead).lastIndexOf("\\") + 1,
                             String.valueOf(fileToRead).indexOf("."));
                     pathName = name;
+
                     String cirDir = fileChooser.getCurrentDirectory() + "\\" + name + "Circles.cir";    //Sets .cir file containing serialized circle array as current directory
-                    String lineDir = fileChooser.getCurrentDirectory() + "\\" + name + "Traj.line";     //Sets .line file containing serialized line array as current directory
-                    String trajDir = fileChooser.getCurrentDirectory() + "\\" + name + "Json.traj";
+                    String lineDir = fileChooser.getCurrentDirectory() + "\\" + name + "Line.ln";     //Sets .ln file containing serialized line array as current directory
+                    String trajDir = fileChooser.getCurrentDirectory() + "\\" + name + "Trajectory.traj";
                     String armDir = fileChooser.getCurrentDirectory() + "\\" + name + "Params.arm";
+                    String motorDir = fileChooser.getCurrentDirectory() + "\\" + name + "MotorSeq.mot";
+
                     draw.setDimension(15, 15);
                     draw.backgroundTransparent(true);
                     draw.visibility(true);
+
                     circles = SerializeAndDeserialize.deserialize(cirDir, false);    //Gets deserialized ArrayList and defines variable
                     lineSettingsAndParameters = SerializeAndDeserialize.deserialize(lineDir, true);  //Deserializes the arrays (see SerializeAndDeserialize class)
                     armServoList = SerializeAndDeserialize.deserialize(armDir, false);
+                    motorNames = SerializeAndDeserialize.deserializeMotors(motorDir);
 
-                    String trajectory = SerializeAndDeserialize.readJson(trajDir);
-                    String motorString = trajectory.substring(trajectory.indexOf(";") + 1, trajectory.lastIndexOf("_") - 5);
-                    motorString = motorString.replace("[\"", "");
-                    motorString = motorString.replace("\"]", "");
-                    motorNames = new ArrayList<>(Arrays.asList(motorString.split("\",\"")));
+                    String status = MotorSetup.checkMissingMotors(motorNames);
+                    if(!status.contains("None"))
+                        System.out.println("MOTOR IMPORT ERROR:  " + status);
 
-                    String armVals = trajectory.substring(trajectory.lastIndexOf("_") + 1);
-                    armVals = armVals.replace("[", "");
-                    armVals = armVals.replace("]", "");
-                    ArrayList<Integer> example = ArrayListConverters.stringArrayToIntArray(
-                            new ArrayList<>(Arrays.asList(armVals.split(","))));
+                    String trajectory = SerializeAndDeserialize.readTxt(trajDir);
 
                     settings = lineSettingsAndParameters.get(0);
                     params1 = lineSettingsAndParameters.get(1);
                     params2 = lineSettingsAndParameters.get(2);
                     params3 = lineSettingsAndParameters.get(3);
+
                     ZipAndUnzip.deleteAndOrRename(cirDir, "", "", true, false);
                     ZipAndUnzip.deleteAndOrRename(trajDir, "", "", true, false);
                     ZipAndUnzip.deleteAndOrRename(lineDir, "", "", true, false);
                     ZipAndUnzip.deleteAndOrRename(armDir, "", "", true, false);  //Deletes temporary files
+                    ZipAndUnzip.deleteAndOrRename(motorDir,"","",true,false);
 
                     prevFilePath = fileChooser.getCurrentDirectory();
                 } else if (result == JFileChooser.CANCEL_OPTION) {      //If cancel button is pressed
@@ -415,90 +464,89 @@ public class MainActivity extends JPanel {
         saveButton.addActionListener(new ActionListener() {  //Save Button onClickListener
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                JFileChooser fileChooser = new JFileChooser() {
-                };
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fileChooser.removeChoosableFileFilter(fileChooser.getFileFilter());  //Remove the default "All Files" filter
-                FileFilter filter = new FileNameExtensionFilter("PATH file", "path");
-                fileChooser.addChoosableFileFilter(filter); //Add .path file type filter
+                String status = MotorSetup.checkMissingMotors(motorNames);
+                if (!status.contains("None")) {
+                    System.out.println("MOTOR IMPORT ERROR:  " + "You seem to be missing some motors in your motor list. In order to save the path, " +
+                            "you must import all the required motors.");
+                    System.out.println("MOTOR IMPORT ERROR:  " + status);
+                } else if (status.contains("None")) {
+                    JFileChooser fileChooser = new JFileChooser() {
+                    };
+                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    fileChooser.removeChoosableFileFilter(fileChooser.getFileFilter());  //Remove the default "All Files" filter
+                    FileFilter filter = new FileNameExtensionFilter("PATH file", "path");
+                    fileChooser.addChoosableFileFilter(filter); //Add .path file type filter
 
-                fileChooser.setDialogTitle("Save Path");
-                fileChooser.setPreferredSize(new Dimension(800, 600));
-                fileChooser.setSelectedFile(new File("untitled.path"));
-                if (prevFilePath != null) {
-                    fileChooser.setCurrentDirectory(prevFilePath);
-                }
-                String fileNoExt = "";
-                int userSelection = fileChooser.showSaveDialog(layeredPane);
-                if (userSelection == JFileChooser.APPROVE_OPTION) {     //Save Button is pressed
-                    File f = fileChooser.getSelectedFile();
-                    pathName = String.valueOf(f).substring(String.valueOf(f).lastIndexOf("\\") + 1,
-                            String.valueOf(f).indexOf("."));
-                    if (!String.valueOf(f).contains(".path")) {   //If file name does not contain .path
-                        int dialogButton = JOptionPane.ERROR_MESSAGE;   //Error message pops up
-                        JOptionPane.showMessageDialog(null, "Error: File must contain '.path' extension", "Error", dialogButton);
-                    } else if (f.exists()) {  //If file name already exists
-                        int dialogButton2 = JOptionPane.YES_NO_OPTION;
-                        int dialogResult = JOptionPane.showConfirmDialog(null,
-                                "File Already Exists! Do you want to Replace?", "File Exists", dialogButton2);    //Ask if user wants to replace file
-                        if (dialogResult == JOptionPane.YES_OPTION) {
-                            f.setExecutable(false);
-                            f.setReadable(true);
-                            f.setWritable(true);
-                            f.delete();
-                            currentlySelected = String.valueOf(f);
-                            File fileToSave = fileChooser.getSelectedFile();    //Selects the duplicate file, deletes it, and create new files
-                            fileChooser.setCurrentDirectory(fileChooser.getSelectedFile());
+                    fileChooser.setDialogTitle("Save Path");
+                    fileChooser.setPreferredSize(new Dimension(800, 600));
+                    fileChooser.setSelectedFile(new File("untitled.path"));
+                    if (prevFilePath != null) {
+                        fileChooser.setCurrentDirectory(prevFilePath);
+                    }
+                    String fileNoExt = "";
+                    int userSelection = fileChooser.showSaveDialog(layeredPane);
+                    if (userSelection == JFileChooser.APPROVE_OPTION) {     //Save Button is pressed
+                        File f = fileChooser.getSelectedFile();
+                        pathName = String.valueOf(f).substring(String.valueOf(f).lastIndexOf("\\") + 1,
+                                String.valueOf(f).indexOf("."));
+                        if (!String.valueOf(f).contains(".path")) {   //If file name does not contain .path
+                            int dialogButton = JOptionPane.ERROR_MESSAGE;   //Error message pops up
+                            JOptionPane.showMessageDialog(null, "Error: File must contain '.path' extension", "Error", dialogButton);
+                        } else if (f.exists()) {  //If file name already exists
+                            int dialogButton2 = JOptionPane.YES_NO_OPTION;
+                            int dialogResult = JOptionPane.showConfirmDialog(null,
+                                    "File Already Exists! Do you want to Replace?", "File Exists", dialogButton2);    //Ask if user wants to replace file
+                            if (dialogResult == JOptionPane.YES_OPTION) {
+                                f.setExecutable(false);
+                                f.setReadable(true);
+                                f.setWritable(true);
+                                f.delete();
+                                currentlySelected = String.valueOf(f);
+                                File fileToSave = fileChooser.getSelectedFile();    //Selects the duplicate file, deletes it, and create new files
+                                fileChooser.setCurrentDirectory(fileChooser.getSelectedFile());
+                                if (String.valueOf(fileToSave).contains(".path")) {
+                                    fileNoExt = String.valueOf(fileToSave).substring(String.valueOf(fileToSave).lastIndexOf("\\") + 1,
+                                            String.valueOf(fileToSave).indexOf("."));
+                                }
+                                prevFilePath = fileChooser.getCurrentDirectory();
+                                String traj = "";
+                                try {
+                                    TrajBuilderWrapper driveTraj = new TrajBuilderWrapper(FromAndToPose2D.pointsToPose2d(circles,
+                                            0, 1, 3), lineSettingsAndParameters.get(0), motorNames, armServoList,
+                                            DriverConstraintsWrapper.getDriveConstraints(), pathName);
+                                    traj = objectMapper.writeValueAsString(driveTraj);
+                                } catch (Exception e) {
+                                }
+                                SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, armServoList, motorNames,
+                                        String.valueOf(fileToSave), fileNoExt, traj);
+                                ZipAndUnzip.zipFolder(fileToSave.getAbsolutePath(), fileNoExt);
+                            }
+                        } else {    //If not a duplicate file name and contains .path ext in the name
+                            File fileToSave = fileChooser.getSelectedFile();    //Saves the files
                             if (String.valueOf(fileToSave).contains(".path")) {
                                 fileNoExt = String.valueOf(fileToSave).substring(String.valueOf(fileToSave).lastIndexOf("\\") + 1,
                                         String.valueOf(fileToSave).indexOf("."));
                             }
                             prevFilePath = fileChooser.getCurrentDirectory();
-                            String motors = "";
+                            currentlySelected = fileNoExt;
                             String traj = "";
-                            String arm = "";
                             try {
                                 TrajBuilderWrapper driveTraj = new TrajBuilderWrapper(FromAndToPose2D.pointsToPose2d(circles,
-                                        0, 1, 3), lineSettingsAndParameters.get(0),
+                                        0, 1, 3), lineSettingsAndParameters.get(0), motorNames, armServoList,
                                         DriverConstraintsWrapper.getDriveConstraints(), pathName);
-                                motors = objectMapper.writeValueAsString(motorNames);
-                                arm = objectMapper.writeValueAsString(armServoList);
                                 traj = objectMapper.writeValueAsString(driveTraj);
                             } catch (Exception e) {
                             }
-                            SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, armServoList, String.valueOf(fileToSave),
-                                    fileNoExt, traj, motors, arm);
+                            SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, armServoList, motorNames,
+                                    String.valueOf(fileToSave), fileNoExt, traj);
+
                             ZipAndUnzip.zipFolder(fileToSave.getAbsolutePath(), fileNoExt);
                         }
-                    } else {    //If not a duplicate file name and contains .path ext in the name
-                        File fileToSave = fileChooser.getSelectedFile();    //Saves the files
-                        if (String.valueOf(fileToSave).contains(".path")) {
-                            fileNoExt = String.valueOf(fileToSave).substring(String.valueOf(fileToSave).lastIndexOf("\\") + 1,
-                                    String.valueOf(fileToSave).indexOf("."));
-                        }
+                    } else if (userSelection == JFileChooser.CANCEL_OPTION) {   //Cancel button is pressed
                         prevFilePath = fileChooser.getCurrentDirectory();
-                        currentlySelected = fileNoExt;
-                        String motors = "";
-                        String traj = "";
-                        String arm = "";
-                        try {
-                            TrajBuilderWrapper driveTraj = new TrajBuilderWrapper(FromAndToPose2D.pointsToPose2d(circles,
-                                    0, 1, 3), lineSettingsAndParameters.get(0),
-                                    DriverConstraintsWrapper.getDriveConstraints(), pathName);
-                            motors = objectMapper.writeValueAsString(motorNames);
-                            arm = objectMapper.writeValueAsString(armServoList);
-                            traj = objectMapper.writeValueAsString(driveTraj);
-                        } catch (Exception e) {
-                        }
-                        SerializeAndDeserialize.serialize(circles, lineSettingsAndParameters, armServoList, String.valueOf(fileToSave),
-                                fileNoExt, traj, motors, arm);
-
-                        ZipAndUnzip.zipFolder(fileToSave.getAbsolutePath(), fileNoExt);
+                    } else if (userSelection == JFileChooser.ERROR_OPTION) {    // X button is pressed
+                        prevFilePath = fileChooser.getCurrentDirectory();
                     }
-                } else if (userSelection == JFileChooser.CANCEL_OPTION) {   //Cancel button is pressed
-                    prevFilePath = fileChooser.getCurrentDirectory();
-                } else if (userSelection == JFileChooser.ERROR_OPTION) {    // X button is pressed
-                    prevFilePath = fileChooser.getCurrentDirectory();
                 }
             }
         });
@@ -569,6 +617,7 @@ public class MainActivity extends JPanel {
         draw.addOrSetColor("Yellow", new String[]{"Add"});
         draw.visibility(true);
 
+        layeredPane.add(openConst,18,0);
         layeredPane.add(runLabel, 17, 0);
         layeredPane.add(powerLabel, 16, 0);
         layeredPane.add(delayLabel, 15, 0);
@@ -589,6 +638,8 @@ public class MainActivity extends JPanel {
         draw.showAllCirclesAndLines(layeredPane);   //Draws invisible circle--Allows us to access + change paintComponent after runtime
 
         threads.executeRepaintAndClear(layeredPane, jLabel);    //See "threads" class
+
+        threads.updateMotors(jComboBox2);
 
         threads.selectedListener(jComboBox1, jComboBox2);
         threads.showMotorSettings(updateValues, delayBeforeRunning, secondsRun, power, delayLabel, runLabel, powerLabel);

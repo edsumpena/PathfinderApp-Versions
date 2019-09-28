@@ -1,0 +1,8 @@
+Names:["WheelDcMotors","ArmDcMotor","SmallServoArm"],Types;["DCWheel","DCArm","Servo"]|  *Only change/add values. DO NOT CHANGE ":", ";", "|", or spaces! Types of motors should be one of three values: "DCWheel","DCArm", or "Servo".
+
+DO NOT USE OR OPEN IN ParamsGenerator-This is intended for example purposes ONLY:
+
+-Stores motor names and types. Motor names are user defined & motor types are one of three types: DCWheel, DCArm, or Servo
+	-DCWheel- DCMotors that control the wheels
+	-DCArm- DCMotors that controls an arm
+	-Servo- Servo motor that controls a servo arm

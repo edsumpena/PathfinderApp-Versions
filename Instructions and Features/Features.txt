@@ -8,25 +8,37 @@ Pathfinder App Features:
 
 2. Features involving movement options:
 -Drive Options Dropdown: Set drive behavior
--Motor Options Dropdown: Set Motor moving (v1.1.0 NEW)
--Select an Arm Motor/Servo point & change parameters! (v1.1.0 NEW)
+-Motor Options Dropdown: Set Motor moving
+-Select an Arm Motor/Servo point & change parameters!
 
-3. Features involving 
--Get Path Data: Encodes Trajectory (in format: "TRAJ: trajectory, MOTORS; motors, ARM_ motorLocations (v1.1.0 NEW)") 
+3. Features involving files:
+-Get Path Data: Encodes Trajectory (NO LONGER in format: "TRAJ: trajectory, MOTORS; motors, ARM_ motorLocations", 
+ONE trajectory string now contains ALL this data (v1.2.0 NEW)) 
 -Open Path: Opens saved path in .path format
 -Save Path: Saves path to .path file
+-Open Motors and Drive Constants: Opens a .prms file that stores drive constraints and pre-defined motor names & types (v1.2.0 NEW)
+
+4. Features involving ParamsGenerator App: (v1.2.0 NEW)
+-Input you motor names, motor types, and drive constraints into the textboxes accordingly (v1.2.0 NEW)
+-Open Params File: Opens saved parameters in .prms format (v1.2.0 NEW)
+-Save Params: Saves parameters to .prms file (v1.2.0 NEW)
 
 
-v1.1.0 New Features:
-
--Added customizable motors
--Arm Motors now add orange dot
--Change Arm Motor/Servo Params
--Move and Delete Arm Motor/Servo Points
-
-v1.1.1 New Features:
--Added new SKYSTONE field
+v1.2.0 New Features
+-NEW ParamsGeneratorApp
+-In ParamsGeneratorApp, Open, Customize, and Save robot motors and drive constraints into .prms file
+-Access data stored in .prms file in PathFinderApp
+-See the data stored in a .prms file
 
 v1.1.2 New Features:
 -Supports Java 1.8
 -See the data stored in a .path file
+
+v1.1.1 New Features:
+-Added new SKYSTONE field
+
+v1.1.0 New Features:
+-Added customizable motors
+-Arm Motors now add orange dot
+-Change Arm Motor/Servo Params
+-Move and Delete Arm Motor/Servo Points

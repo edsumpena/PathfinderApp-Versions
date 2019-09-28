@@ -5,7 +5,8 @@ How to Run the App:
 3. Press "+" in top left corner
 4. In the dropdown menu, press "JAR Application"
 5. Under "Path to JAR", select the path to the app
-6. "Working directory" section should update upon selecting path to app.
+6. "Working directory" section should update upon selecting path to PathfinderApp.
 7. "JRE" should be set to any JAVA version that is 1.8 or newer.
 8. Press OK
 9. Run the Project using the configuration that was just created
+10. Follow the same steps to run ParamsGenerator App

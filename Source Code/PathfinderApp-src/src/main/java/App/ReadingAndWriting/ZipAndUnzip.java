@@ -24,18 +24,18 @@ public class ZipAndUnzip {
             while ((len = in.read(buffer)) > 0) {
                 zos.write(buffer, 0, len);
             }
-            ze= new ZipEntry(pathName + "Traj.line");
+            ze= new ZipEntry(pathName + "Line.ln");
             zos.putNextEntry(ze);
-            in = new FileInputStream(zipFilePath + "\\" + pathName + "Traj.line");
+            in = new FileInputStream(zipFilePath + "\\" + pathName + "Lines.ln");
 
             int len2;
             while ((len2 = in.read(buffer)) > 0) {
                 zos.write(buffer, 0, len2);
             }
 
-            ze= new ZipEntry(pathName + "Json.traj");
+            ze= new ZipEntry(pathName + "Trajectory.traj");
             zos.putNextEntry(ze);
-            in = new FileInputStream(zipFilePath + "\\" + pathName + "Json.traj");
+            in = new FileInputStream(zipFilePath + "\\" + pathName + "Trajectory.traj");
 
             int len3;
             while ((len3 = in.read(buffer)) > 0) {
@@ -50,6 +50,16 @@ public class ZipAndUnzip {
             while ((len4 = in.read(buffer)) > 0) {
                 zos.write(buffer, 0, len4);
             }
+
+            ze= new ZipEntry(pathName + "MotorSeq.mot");
+            zos.putNextEntry(ze);
+            in = new FileInputStream(zipFilePath + "\\" + pathName + "MotorSeq.mot");
+
+            int len5;
+            while ((len5 = in.read(buffer)) > 0) {
+                zos.write(buffer, 0, len5);
+            }
+
             in.close();
             zos.closeEntry();
 
@@ -70,12 +80,12 @@ public class ZipAndUnzip {
         tempFolder.setReadable(true);
         tempFolder.setWritable(true);
         tempFolder.delete();
-        File tempFolder2 = new File(zipFilePath + "\\" + name + "Traj.line");
+        File tempFolder2 = new File(zipFilePath + "\\" + name + "Lines.ln");
         tempFolder2.setExecutable(true);
         tempFolder2.setReadable(true);
         tempFolder2.setWritable(true);
         tempFolder2.delete();
-        File tempFolder3 = new File(zipFilePath + "\\" + name + "Json.traj");
+        File tempFolder3 = new File(zipFilePath + "\\" + name + "Trajectory.traj");
         tempFolder3.setExecutable(true);
         tempFolder3.setReadable(true);
         tempFolder3.setWritable(true);
@@ -85,6 +95,11 @@ public class ZipAndUnzip {
         tempFolder4.setReadable(true);
         tempFolder4.setWritable(true);
         tempFolder4.delete();
+        File tempFolder5 = new File(zipFilePath + "\\" + name + "MotorSeq.mot");
+        tempFolder5.setExecutable(true);
+        tempFolder5.setReadable(true);
+        tempFolder5.setWritable(true);
+        tempFolder5.delete();
     }
     public static void deleteAndOrRename(String deletePath, String renamePath, String renameFilePathTo, boolean delete, boolean rename){
         try {

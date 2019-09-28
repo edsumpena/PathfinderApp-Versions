@@ -77,4 +77,22 @@ public class MotorSetup {
         }
         return status;
     }
+
+    public static String checkMissingMotors(ArrayList<String> names){
+        String missing = "You are missing the following Motors: None";
+        for(int i = 0; i < names.size(); i++){
+            if((!MotorSetup.importMotors().get(0).contains(names.get(i).substring(0, names.get(i).indexOf("(") - 1)) ||
+                    !MotorSetup.importMotors().get(1).contains(names.get(i).substring(names.get(i).indexOf("(") + 1,
+                            names.get(i).indexOf(")")))) && !missing.contains(names.get(i).substring(0, names.get(i).indexOf("(") - 1) +
+                    ", Type = " + names.get(i).substring(names.get(i).indexOf("(") + 1, names.get(i).indexOf(")")))){
+                if(missing.contains("None"))
+                    missing = "You are missing the following Motors: Name = " + names.get(i).substring(0, names.get(i).indexOf("(") - 1) +
+                            ", Type = " + names.get(i).substring(names.get(i).indexOf("(") + 1, names.get(i).indexOf(")"));
+                else
+                    missing = missing + "; Name = " + names.get(i).substring(0, names.get(i).indexOf("(") - 1) +
+                            ", Type = " + names.get(i).substring(names.get(i).indexOf("(") + 1, names.get(i).indexOf(")"));
+            }
+        }
+        return missing;
+    }
 }

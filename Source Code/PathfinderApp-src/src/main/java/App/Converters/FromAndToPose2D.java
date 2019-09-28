@@ -1,7 +1,6 @@
 package App.Converters;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
 

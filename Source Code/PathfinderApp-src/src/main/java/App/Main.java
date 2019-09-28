@@ -19,7 +19,7 @@ public class Main {
         });
     }
     private static void createAndShowGUI() throws IOException {
-        JFrame frame = new JFrame("Pathfinding");  //Create and set up the window.
+        JFrame frame = new JFrame("Pathfinder App");  //Create and set up the window.
         MainActivity newContentPane = new MainActivity();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //EditParametersActivity editParametersActivity = new EditParametersActivity();
