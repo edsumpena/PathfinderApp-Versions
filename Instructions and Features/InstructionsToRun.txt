@@ -1,6 +1,6 @@
 How to Run the App:
 
-1. Open the file in Intellij IDEA
+1. Open the file "PathfinderApp vX.X.X" in Intellij IDEA. YOU MUST OPEN THIS FILE TO WORK!
 2. On the toolbar, press "add configurations" (located to the right of build project and left of run project)
 3. Press "+" in top left corner
 4. In the dropdown menu, press "JAR Application"
