@@ -28,6 +28,7 @@ v1.2.1 New Features
 -Fixed bug that prevented users selecting & changing arm/servo motors
 -Fixed visual bug that displayed incorrect motor for selected point
 -Changed some text
+-Other minor bug fixes
 
 v1.2.0 New Features
 -NEW ParamsGeneratorApp

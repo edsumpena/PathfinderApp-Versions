@@ -106,7 +106,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                               e.printStackTrace();
+                                e.printStackTrace();
                             }
                         }
                         try {
@@ -233,11 +233,12 @@ public class MainActivity extends JPanel {
             };
             one.start();
         }
+
         public static void updateMotors(JComboBox motors) {     //All JFrame related loops
             Thread one = new Thread() {
                 public void run() {
                     while (true) {
-                        if(updateMots){
+                        if (updateMots) {
                             updateMots = false;
                             if (!MotorSetup.importMotors().get(0).get(0).contains("Error")) {     //Imports list of motors & motor types
                                 int i = 0;
@@ -326,7 +327,7 @@ public class MainActivity extends JPanel {
         openPathButton.setFocusable(false);
 
         JButton openConst = new JButton("Open Motors & Drive Constants");
-        openConst.setBounds(900,400,250,35);
+        openConst.setBounds(900, 400, 250, 35);
         openConst.setFocusable(false);
 
         JTextField tf = new JTextField();  //Output Text Field
@@ -382,14 +383,14 @@ public class MainActivity extends JPanel {
 
                     try {
                         DriverConstraintsWrapper.setDriveContraints(csts[0], csts[1], csts[2], csts[3]);
-                    } catch (Exception f){
+                    } catch (Exception f) {
                         System.out.println("MOTOR IMPORT ERROR:  Error Setting Drive Constraints!");
                     }
 
                     MotorSetup.exportMotors(motorVals.get(0), motorVals.get(1));
 
                     ZipAndUnzip.deleteAndOrRename(constantsDir, "", "", true, false);  //Deletes temporary files
-                    ZipAndUnzip.deleteAndOrRename(motorDir,"","",true,false);
+                    ZipAndUnzip.deleteAndOrRename(motorDir, "", "", true, false);
 
                     updateMots = true;
 
@@ -443,8 +444,10 @@ public class MainActivity extends JPanel {
                     motorNames = SerializeAndDeserialize.deserializeMotors(motorDir);
 
                     String status = MotorSetup.checkMissingMotors(motorNames);
-                    if(!status.contains("None"))
+                    if (!status.contains("None"))
                         System.out.println("MOTOR IMPORT ERROR:  " + status);
+                    else if(status.contains("None"))
+                        System.out.println("All required motors (for this path) has already been imported! You may edit/save this path.");
 
                     String trajectory = SerializeAndDeserialize.readTxt(trajDir);
 
@@ -457,7 +460,7 @@ public class MainActivity extends JPanel {
                     ZipAndUnzip.deleteAndOrRename(trajDir, "", "", true, false);
                     ZipAndUnzip.deleteAndOrRename(lineDir, "", "", true, false);
                     ZipAndUnzip.deleteAndOrRename(armDir, "", "", true, false);  //Deletes temporary files
-                    ZipAndUnzip.deleteAndOrRename(motorDir,"","",true,false);
+                    ZipAndUnzip.deleteAndOrRename(motorDir, "", "", true, false);
 
                     prevFilePath = fileChooser.getCurrentDirectory();
                 } else if (result == JFileChooser.CANCEL_OPTION) {      //If cancel button is pressed
@@ -624,7 +627,7 @@ public class MainActivity extends JPanel {
         draw.addOrSetColor("Yellow", new String[]{"Add"});
         draw.visibility(true);
 
-        layeredPane.add(openConst,18,0);
+        layeredPane.add(openConst, 18, 0);
         layeredPane.add(runLabel, 17, 0);
         layeredPane.add(powerLabel, 16, 0);
         layeredPane.add(delayLabel, 15, 0);
@@ -790,7 +793,7 @@ public class MainActivity extends JPanel {
                                 } catch (Exception e) {
                                     //e.printStackTrace();
                                 }
-                            } else if(selected && arm){
+                            } else if (selected && arm) {
                                 try {
                                     int rawIndex = armServoList.indexOf(selectedCircle[0]);
                                     int finalIndex = armServoList.get(rawIndex + 5) + rawIndex / 6;
@@ -984,7 +987,8 @@ public class MainActivity extends JPanel {
         @Override
         public void keyPressed(KeyEvent e)  //Key is pressed
         {
-            if (e.getKeyCode() == KeyEvent.VK_N) {  //If N is pressed
+            String status = MotorSetup.checkMissingMotors(motorNames);
+            if (e.getKeyCode() == KeyEvent.VK_N && status.contains("None")) {  //If N is pressed
                 nPressed = true;
                 gPressed = false;
                 if (!mouseExited && mouseX + xOffset <= 735 && mouseY + yOffset <= 735 &&
@@ -1022,12 +1026,16 @@ public class MainActivity extends JPanel {
                             draw.addOrSetColor("Pink", new String[]{"Add"});
                     }
                 }
+            } else if (!status.contains("None")) {
+                System.out.println("MOTOR IMPORT ERROR:  You may not edit this path because some motors have not been imported!");
+                System.out.println("MOTOR IMPORT ERROR:  " + status);
             }
         }
 
         @Override
         public void keyReleased(KeyEvent e)  //Key is released
         {
+            String status = MotorSetup.checkMissingMotors(motorNames);
             if (e.getKeyCode() == KeyEvent.VK_N) {  //If N is released
                 nPressed = false;
                 alreadyAdded = false;
@@ -1036,24 +1044,40 @@ public class MainActivity extends JPanel {
                 gPressed = false;
                 alreadyAdded = false;
                 nPressed = false;
-            } else if (e.getKeyCode() == KeyEvent.VK_DELETE && selected) {
+            } else if (e.getKeyCode() == KeyEvent.VK_DELETE && selected && status.contains("None")) {
                 if (circles.indexOf(selectedCircle[0]) > 2 && !arm) {
-                    circles.remove(circles.indexOf(selectedCircle[1]) + 1);
-                    circles.remove(circles.indexOf(selectedCircle[0]));
-                    circles.remove(circles.indexOf(selectedCircle[1]));
-                    ArrayList<String> temp = params1;
-                    temp.add(params3.get(params3.size() - 2));
-                    temp.add(params3.get(params3.size() - 1));
-                    if (settings.size() > 1)
-                        settings.remove(temp.indexOf(String.valueOf(selectedCircle[0])) / 2 - 1);
-                    else
-                        settings.remove(0);
-                    params1.remove(params1.indexOf(String.valueOf(selectedCircle[0])));
-                    params1.remove(params1.indexOf(String.valueOf(selectedCircle[1])));
-                    params3.remove(params3.indexOf(String.valueOf(selectedCircle[0])));
-                    params3.remove(params3.indexOf(String.valueOf(selectedCircle[1])));
-                    params2.remove(params2.size() - 1);
-                    params2.remove(params2.size() - 1);
+                    try {
+                        int counter = 0;
+                        for(int i = 5; i < armServoList.size(); i += 6){
+                            if(armServoList.get(i) < circles.indexOf(selectedCircle[0]) / 3 - 1){
+                                counter += 1;
+                            }
+                        }
+                        motorNames.remove(circles.indexOf(selectedCircle[0]) / 3 - 1 + counter);
+                        for(int i = 5; i < armServoList.size(); i += 6){
+                            if(armServoList.get(i) >= circles.indexOf(selectedCircle[0]) / 3 - 1){
+                                armServoList.set(i, armServoList.get(i) - 1);
+                            }
+                        }
+                        circles.remove(circles.indexOf(selectedCircle[1]) + 1);
+                        circles.remove(circles.indexOf(selectedCircle[0]));
+                        circles.remove(circles.indexOf(selectedCircle[1]));
+                        ArrayList<String> temp = params1;
+                        temp.add(params3.get(params3.size() - 2));
+                        temp.add(params3.get(params3.size() - 1));
+                        if (settings.size() > 1)
+                            settings.remove(temp.indexOf(String.valueOf(selectedCircle[0])) / 2 - 1);
+                        else
+                            settings.remove(0);
+                        params1.remove(params1.indexOf(String.valueOf(selectedCircle[0])));
+                        params1.remove(params1.indexOf(String.valueOf(selectedCircle[1])));
+                        params3.remove(params3.indexOf(String.valueOf(selectedCircle[0])));
+                        params3.remove(params3.indexOf(String.valueOf(selectedCircle[1])));
+                        params2.remove(params2.size() - 1);
+                        params2.remove(params2.size() - 1);
+                    } catch (Exception x) {
+                        x.printStackTrace();
+                    }
                     arm = false;
                     selected = false;
                     selectedCircle[0] = -1000;
@@ -1063,6 +1087,9 @@ public class MainActivity extends JPanel {
                     arm = false;
                     selected = false;
                     try {
+                        int rawIndex = armServoList.indexOf(selectedCircle[0]);
+                        int index = armServoList.get(rawIndex + 5) + rawIndex / 6;
+                        motorNames.remove(index);
                         armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
                         armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
                         armServoList.remove(armServoList.indexOf(selectedCircle[0]) + 2);
@@ -1070,13 +1097,16 @@ public class MainActivity extends JPanel {
                         armServoList.remove(armServoList.indexOf(selectedCircle[0]));
                         armServoList.remove(armServoList.indexOf(selectedCircle[1]));
                     } catch (Exception x) {
-                        //x.printStackTrace();
+                        x.printStackTrace();
                     }
-                    MotorSettingsHandler.panelManager(false,50,1000,1000);
+                    MotorSettingsHandler.panelManager(false, 50, 1000, 1000);
                     selectedCircle[0] = -1000;
                     selectedCircle[1] = -1000;
                     selectedCircle[2] = -1000;
                 }
+            } else if (!status.contains("None")) {
+                System.out.println("MOTOR IMPORT ERROR:  You may not edit this path because some motors have not been imported!");
+                System.out.println("MOTOR IMPORT ERROR:  " + status);
             }
         }
 
@@ -1439,7 +1469,7 @@ public class MainActivity extends JPanel {
                                             g2d.draw(curvedLine);
                                         }
                                     } catch (Exception e) {
-                                       // e.printStackTrace();
+                                        // e.printStackTrace();
                                     }
                                 }
                                 numOfIndexesRun += 1;
@@ -1471,7 +1501,7 @@ public class MainActivity extends JPanel {
                                             points2draw.get(numOfIndexesRun).remove(1);
                                         }
                                     } catch (Exception e) {
-                                       // e.printStackTrace();
+                                        // e.printStackTrace();
                                     }
                                 }
                                 numOfIndexesRun += 1;
