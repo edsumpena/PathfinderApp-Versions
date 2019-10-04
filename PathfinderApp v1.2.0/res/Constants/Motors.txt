@@ -1,1 +1,0 @@
-Names:["WheelDcMotors","ArmDcMotor","SmallServoArm"],Types;["DCWheel","DCArm","Servo"]|  *Only change/add values. DO NOT CHANGE ":", ";", "|", or spaces! Types of motors should be one of three values: "DCWheel","DCArm", or "Servo".
