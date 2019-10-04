@@ -24,6 +24,11 @@ ONE trajectory string now contains ALL this data (v1.2.0 NEW))
 -Save Params: Saves parameters to .prms file (v1.2.0 NEW)
 
 
+v1.2.1 New Features
+-Fixed bug that prevented users selecting & changing arm/servo motors
+-Fixed visual bug that displayed incorrect motor for selected point
+-Changed some text
+
 v1.2.0 New Features
 -NEW ParamsGeneratorApp
 -In ParamsGeneratorApp, Open, Customize, and Save robot motors and drive constraints into .prms file

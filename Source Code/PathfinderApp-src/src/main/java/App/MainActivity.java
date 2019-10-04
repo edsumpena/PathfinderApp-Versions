@@ -20,7 +20,9 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 
 import static App.Converters.LineArrayProcessor.getCurrentSetting;
@@ -81,7 +83,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                                //e.printStackTrace();
+                                e.printStackTrace();
                             }
                         }
                         try {
@@ -104,7 +106,7 @@ public class MainActivity extends JPanel {
                             try {
                                 Thread.sleep(100);
                             } catch (Exception e) {
-                               // e.printStackTrace();
+                               e.printStackTrace();
                             }
                         }
                         try {
@@ -159,9 +161,12 @@ public class MainActivity extends JPanel {
                                 oneTimeRun = true;
                             } else if (selected && !oneTimeRun && arm) {
                                 cbLine.setSelectedIndex(0);
+                                prevSelectedLine = cbLine.getSelectedIndex();
+                                prevSelectedMotor = cbMotor.getSelectedIndex();
                                 prevSelectedLine = 0;
                                 prevSelectedMotor = cbMotor.getSelectedIndex();
-                                int index = armServoList.get(armServoList.indexOf(selectedCircle[0]) + 5);
+                                int rawIndex = armServoList.indexOf(selectedCircle[0]);
+                                int index = armServoList.get(rawIndex + 5) + rawIndex / 6;
                                 int i = 0;
                                 while (cbMotor.getItemCount() > i) {
                                     if (cbMotor.getItemAt(i).toString().contains(motorNames.get(index))) {
@@ -169,13 +174,14 @@ public class MainActivity extends JPanel {
                                     }
                                     i += 1;
                                 }
+                                oneTimeRun = true;
                             } else if (!selected && oneTimeRun) {
                                 cbLine.setSelectedIndex(prevSelectedLine);
                                 cbMotor.setSelectedIndex(prevSelectedMotor);
                                 oneTimeRun = false;
                             }
                         } catch (Exception e) {
-                            //e.printStackTrace();
+                            e.printStackTrace();
                         }
                         try {
                             Thread.sleep(50);
@@ -260,9 +266,9 @@ public class MainActivity extends JPanel {
         layeredPane.setPreferredSize(new Dimension(1300, 750));
         BufferedImage image = null;
         try {
-            image = ImageIO.read(new File("res/images/SkyStoneFieldv1.png"));  //Import FTC Field Image
+            image = ImageIO.read(new File("res/images/SkyStoneFieldv1.png"));  //Import FTC Field Image     //res/images/SkyStoneFieldv1.png
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             System.exit(1);
         }
         Image newImage = image.getScaledInstance(750, 750, java.awt.Image.SCALE_SMOOTH);  //Scale up the image in size
@@ -470,6 +476,7 @@ public class MainActivity extends JPanel {
                             "you must import all the required motors.");
                     System.out.println("MOTOR IMPORT ERROR:  " + status);
                 } else if (status.contains("None")) {
+                    System.out.println("All required motors are already imported! You may save the path.");
                     JFileChooser fileChooser = new JFileChooser() {
                     };
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -578,8 +585,8 @@ public class MainActivity extends JPanel {
         delayLabel.setFont(delayLabel.getFont().deriveFont(15f));
 
         JLabel powerLabel = new JLabel();
-        powerLabel.setText("Set Power to Motor:");
-        powerLabel.setBounds(1020, 545, 200, 30);
+        powerLabel.setText("Set Power/Position of Motor/Servo:");
+        powerLabel.setBounds(905, 545, 270, 30);
         powerLabel.setFont(powerLabel.getFont().deriveFont(15f));
 
         JLabel runLabel = new JLabel();
@@ -777,10 +784,19 @@ public class MainActivity extends JPanel {
                         if (String.valueOf(item).contains(MotorSetup.importMotors().get(0).get(i))) {
                             currentlySelected = MotorSetup.importMotors().get(0).get(i) + " (" + MotorSetup.importMotors().get(1).get(i) +
                                     ")";
-                            if (selected) {
+                            if (selected && !arm) {
                                 try {
                                     motorNames.set(circles.indexOf(selectedCircle[0]) / 3 - 1, currentlySelected);
                                 } catch (Exception e) {
+                                    //e.printStackTrace();
+                                }
+                            } else if(selected && arm){
+                                try {
+                                    int rawIndex = armServoList.indexOf(selectedCircle[0]);
+                                    int finalIndex = armServoList.get(rawIndex + 5) + rawIndex / 6;
+                                    motorNames.set(finalIndex, currentlySelected);
+                                } catch (Exception e) {
+                                    //e.printStackTrace();
                                 }
                             }
                         }

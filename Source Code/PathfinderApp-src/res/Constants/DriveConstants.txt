@@ -1,1 +1,0 @@
-MaxVel:0.0,MaxAcc;0.0,MaxAngVel=0.0,MaxAngAcc-0.0|  *Only change numbers. DO NOT CHANGE ":", ";", "=", "-", "|", or ANY spaces!
