@@ -9,6 +9,7 @@ import App.Converters.LineArrayProcessor;
 import App.ReadingAndWriting.*;
 import App.Wrappers.DriverConstraintsWrapper;
 import App.Wrappers.TrajBuilderWrapper;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
@@ -194,7 +195,7 @@ public class MainActivity extends JPanel {
         }
 
         public static void showMotorSettings(JButton button, JTextField delay, JTextField runner, JTextField power,
-                                             JLabel delayLabel, JLabel runLabel, JLabel powerLabel) {     //All JFrame related loops
+                                             JLabel delayLabel, JLabel runLabel, JLabel powerLabel, JLabel fieldCoordinates) {     //All JFrame related loops
             Thread one = new Thread() {
                 public void run() {
                     boolean stopper = false;
@@ -208,9 +209,13 @@ public class MainActivity extends JPanel {
                             delayLabel.setVisible(true);
                             runLabel.setVisible(true);
                             powerLabel.setVisible(true);
+                            fieldCoordinates.setVisible(true);
                             delay.setText(String.valueOf(del));
                             runner.setText(String.valueOf(run));
                             power.setText(String.valueOf(pow));
+                            Pose2d temp = FromAndToPose2D.canvasToFieldSpace(selectedCircle[0], selectedCircle[1], 0, 0);
+                            fieldCoordinates.setText("X: " + Math.round(temp.getX() * 1000d) / 1000d +
+                                    ", Y: " + Math.round(temp.getY() * 1000d) / 1000d);
                         } else if (!showing && !stopper) {
                             stopper = true;
                             button.setVisible(false);
@@ -223,6 +228,7 @@ public class MainActivity extends JPanel {
                             delayLabel.setVisible(false);
                             runLabel.setVisible(false);
                             powerLabel.setVisible(false);
+                            fieldCoordinates.setVisible(false);
                         }
                         try {
                             Thread.sleep(10);
@@ -597,6 +603,11 @@ public class MainActivity extends JPanel {
         runLabel.setBounds(1015, 595, 200, 30);
         runLabel.setFont(runLabel.getFont().deriveFont(15f));
 
+        JLabel fieldCoords = new JLabel();
+        fieldCoords.setText("X: 9999.99, Y: 9999.99");
+        fieldCoords.setBounds(960, 10, 170, 30);
+        fieldCoords.setFont(delayLabel.getFont().deriveFont(13f));
+
         //---------
 
         updateValues.addActionListener(new ActionListener() {  //Button onClickListener
@@ -627,6 +638,7 @@ public class MainActivity extends JPanel {
         draw.addOrSetColor("Yellow", new String[]{"Add"});
         draw.visibility(true);
 
+        layeredPane.add(fieldCoords, 19, 0);
         layeredPane.add(openConst, 18, 0);
         layeredPane.add(runLabel, 17, 0);
         layeredPane.add(powerLabel, 16, 0);
@@ -652,7 +664,7 @@ public class MainActivity extends JPanel {
         threads.updateMotors(jComboBox2);
 
         threads.selectedListener(jComboBox1, jComboBox2);
-        threads.showMotorSettings(updateValues, delayBeforeRunning, secondsRun, power, delayLabel, runLabel, powerLabel);
+        threads.showMotorSettings(updateValues, delayBeforeRunning, secondsRun, power, delayLabel, runLabel, powerLabel, fieldCoords);
         MotorSettingsHandler.panelManager(false, 50, 1000, 1000);
         circles.clear();    //Reset ArrayList of circles
 
