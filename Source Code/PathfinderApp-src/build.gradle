@@ -1,7 +1,13 @@
-apply plugin: 'idea'
-//and standard one
-apply plugin: 'java'
-apply plugin: 'application'
+plugins {
+    id 'java'
+    id 'idea'
+    id 'application'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -10,20 +16,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.acmerobotics.roadrunner:core:0.2.6'
-    implementation 'com.acmerobotics.dashboard:dashboard:0.2.4'
-
-    // https://mvnrepository.com/artifact/org.eclipse.mylyn.github/org.eclipse.egit.github.core
-    compile group: 'org.eclipse.mylyn.github', name: 'org.eclipse.egit.github.core', version: '2.1.5'
-
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9.1'
-
-}
-
-run {
-    main = 'App.Main'
+    implementation 'com.acmerobotics.roadrunner:core:0.4.6'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }

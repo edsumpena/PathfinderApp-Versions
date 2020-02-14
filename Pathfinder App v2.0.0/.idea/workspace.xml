@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a38e55b7-dc6f-4d7d-81cd-f3ca3d03fa15" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectId" id="1Xo7W3zfDDzZQP3CZJYtaOBWks4" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Pathfinder App v2.0.0.rar" />
+  </component>
+  <component name="RunManager">
+    <configuration name="Run Pathfinder App" type="JarApplication">
+      <option name="JAR_PATH" value="$PROJECT_DIR$/PathfinderApp.jar" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\Edmund\Documents\FTC 2019-2020\Pathfinder App-Backups and Versions\Full Versions\v2.0.0\Pathfinder App v2.0.0" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a38e55b7-dc6f-4d7d-81cd-f3ca3d03fa15" name="Default Changelist" comment="" />
+      <created>1581700621311</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1581700621311</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="260" y="92" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1581700671012">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="260" y="92" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1581700671012" />
+    <state x="525" y="240" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1581700865851">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="525" y="240" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1536.824@0.0.1536.824" timestamp="1581700865851" />
+    <state x="585" y="192" key="FileChooserDialogImpl" timestamp="1581700853146">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="585" y="192" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1581700853146" />
+  </component>
+</project>
